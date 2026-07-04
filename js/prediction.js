@@ -19,46 +19,37 @@ function initPrediction() {
  * Run Prediction
  **************************************************************/
 async function runPrediction() {
+  Loader.show("Fetching Prediction...");
 
-    Loader.show("Fetching Prediction...");
+  try {
+    const response = await API.prediction();
 
-    try {
+    console.log("Prediction Response:", response);
 
-        const response = await API.prediction();
+    renderPrediction(response);
+  } catch (error) {
+    console.error(error);
 
-        console.log("Prediction Response:", response);
+    Toast.show(error.message, "error");
 
-        renderPrediction(response);
+    const tbody = Dom.byId("predictionTableBody");
 
-    } catch (error) {
-
-        console.error(error);
-
-        Toast.show(error.message, "error");
-
-        const tbody = Dom.byId("predictionTableBody");
-
-        if (tbody) {
-            tbody.innerHTML = `
+    if (tbody) {
+      tbody.innerHTML = `
                 <tr>
                     <td colspan="4">Unable to load prediction.</td>
                 </tr>
             `;
-        }
-
-    } finally {
-
-        Loader.hide();
-
     }
-
+  } finally {
+    Loader.hide();
+  }
 }
 
 /**************************************************************
  * Render Prediction
  **************************************************************/
 function renderPrediction(response) {
-
   if (!response) {
     Toast.show("No prediction data found.", "error");
     return;
@@ -141,28 +132,21 @@ function renderPredictionChart(predictions) {
   }
 
   predictionChart = new Chart(ctx, {
-    type: "line",
+    type: "bar",
 
     data: {
       labels: predictions.map((p) => p.hour + " Hr"),
 
       datasets: [
         {
-          label: "Predicted Water Level",
+          label: "Predicted Water Level (m)",
 
           data: predictions.map((p) => p.predictedWaterLevel),
 
-          borderColor: "#1976d2",
-
-          backgroundColor: "rgba(25,118,210,0.15)",
-
-          borderWidth: 3,
-
-          fill: true,
-
-          tension: 0.35,
-
-          pointRadius: 5,
+          backgroundColor: "rgba(0, 90, 158, 0.6)",
+          borderColor: "rgba(0, 90, 158, 1)",
+          borderWidth: 1,
+          borderRadius: 4,
         },
       ],
     },
@@ -180,6 +164,7 @@ function renderPredictionChart(predictions) {
 
       scales: {
         y: {
+          beginAtZero: false, // Prevents the Y-axis from starting at 0
           title: {
             display: true,
 
