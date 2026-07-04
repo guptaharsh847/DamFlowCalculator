@@ -27,6 +27,8 @@ const CONFIG = {
     OUTFLOW_HISTORY: "getOutflowHistory",
 
     INFLOW_HISTORY: "getInflowHistory",
+
+    WATER_LEVEL_FROM_CAPACITY: "getWaterLevelForCapacity",
   },
 
   /******************************************************

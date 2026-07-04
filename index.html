@@ -112,6 +112,26 @@
             ></span>
             <span class="nav-text">Inflow</span>
           </li>
+
+          <li onclick="location.href = 'prediction.html'">
+            <span class="icon"
+              ><svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline
+                  points="22 12 18 12 15 21 9 3 6 12 2 12"
+                ></polyline></svg
+            ></span>
+            <span class="nav-text">Prediction</span>
+          </li>
         </ul>
 
         <div class="sidebar-toggle" title="Collapse sidebar">
@@ -191,7 +211,7 @@
           </div>
 
           <div class="card" id="differenceCard">
-            <h3>Water Level Difference</h3>
+            <h3>Net Inflow</h3>
 
             <h2 id="levelDifference">--</h2>
 
@@ -207,7 +227,6 @@
           <button onclick="location.href = 'inflow.html'">
             Calculate Inflow
           </button>
-
         </section>
       </main>
     </div>
@@ -221,7 +240,10 @@
     <!-- PWA Install Popup -->
     <div id="installPopup" class="install-popup hidden">
       <h3>Install Atal Sagar Dam App</h3>
-      <p>For a better experience, install this app on your device. It's fast and works offline.</p>
+      <p>
+        For a better experience, install this app on your device. It's fast and
+        works offline.
+      </p>
       <div class="install-popup-actions">
         <button id="installCancelBtn" class="secondaryBtn">Not Now</button>
         <button id="installConfirmBtn" class="primaryBtn">Install</button>

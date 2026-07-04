@@ -116,6 +116,15 @@ const API = (() => {
 
     return response.history;
   }
+
+  /*****************************************************
+   * Water Level Prediction
+   *****************************************************/
+  async function prediction() {
+    console.log('request raised')
+    return await request("GET", null, "prediction");
+  }
+
   return {
     calculateOutflow,
 
@@ -126,6 +135,7 @@ const API = (() => {
     outflowHistory,
 
     inflowHistory,
+    prediction,
   };
 })();
 /*********************************************************************
@@ -275,7 +285,6 @@ window.addEventListener("load", async () => {
     console.error(error);
   }
 });
-
 /*********************************************************************
  * END OF api.js
  *********************************************************************/

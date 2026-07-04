@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Prediction | Atal Sagar Madikheda Dam</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#005a9e">
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script defer src="js/config.js"></script>
+    <script defer src="js/api.js"></script>
+    <script defer src="js/main.js"></script>
+    <script defer src="js/prediction.js"></script>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- Sidebar -->
+
+        <aside class="sidebar">
+
+            <div class="logo">
+                <h2>Atal Sagar Dam</h2>
+            </div>
+
+            <ul>
+
+                <li onclick="location.href='index.html'">
+                    <span class="nav-text">Dashboard</span>
+                </li>
+
+                <li onclick="location.href='outflow.html'">
+                    <span class="nav-text">Outflow</span>
+                </li>
+
+                <li onclick="location.href='inflow.html'">
+                    <span class="nav-text">Inflow</span>
+                </li>
+
+                <li class="active">
+                    <span class="nav-text">Prediction</span>
+                </li>
+
+            </ul>
+
+        </aside>
+
+        <!-- Main -->
+
+        <main class="content">
+
+            <header>
+
+                <h1>8 Hour Water Level Prediction</h1>
+
+                <div id="currentDateTime"></div>
+
+            </header>
+
+            <!-- Summary Cards -->
+
+            <section class="dashboard">
+
+                <div class="card">
+
+                    <h3>Current Water Level</h3>
+
+                    <h2 id="currentWaterLevel">--</h2>
+
+                    <small>Meter</small>
+
+                </div>
+
+                <div class="card">
+
+                    <h3>Current Capacity</h3>
+
+                    <h2 id="currentCapacity">--</h2>
+
+                    <small>MCM</small>
+
+                </div>
+
+                <div class="card">
+
+                    <h3>Net Flow</h3>
+
+                    <h2 id="netFlow">--</h2>
+
+                    <small>Cumecs</small>
+
+                </div>
+
+            </section>
+
+            <!-- Graph -->
+
+            <section class="historyBox">
+
+                <div class="historyHeader">
+
+                    <h2>Prediction Graph</h2>
+
+                    <button id="refreshPrediction" class="secondaryBtn">
+
+                        Refresh
+
+                    </button>
+
+                </div>
+
+                <canvas id="predictionChart" height="120"></canvas>
+
+            </section>
+
+            <!-- Prediction Table -->
+
+            <section class="historyBox">
+
+                <div class="historyHeader">
+
+                    <h2>8 Hour Prediction</h2>
+
+                </div>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Hour</th>
+
+                            <th>Added MCM</th>
+
+                            <th>Capacity (MCM)</th>
+
+                            <th>Water Level (m)</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="predictionTableBody">
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <!-- Loader -->
+
+    <div id="loader" class="loader hidden">
+
+        <div class="spinner"></div>
+
+        <p id="loaderText">Loading Prediction...</p>
+
+    </div>
+
+</body>
+
+</html>

@@ -4,6 +4,7 @@ const urlsToCache = [
   'index.html',
   'inflow.html',
   'outflow.html',
+  'prediction.html',
   'css/style.css',
   'js/config.js',
   'js/api.js',
@@ -11,6 +12,7 @@ const urlsToCache = [
   'js/dashboard.js',
   'js/inflow.js',
   'js/outflow.js',
+  'js/prediction.js',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap',
 ];
 
