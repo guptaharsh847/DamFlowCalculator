@@ -217,21 +217,27 @@ function renderOutflowHistory(history) {
 
 <tr>
 
-<td>${displayDate}</td>
+<td data-label="Date">${displayDate}</td>
 
-<td>${displayTime}</td>
+<td data-label="Time">${displayTime}</td>
 
-<td>${format(record.waterLevel, 2)}</td>
+<td data-label="Water Level (m)">${format(record.waterLevel, 2)}</td>
 
-<td>${format(record.gateOpening, 2)}</td>
+<td data-label="Gate Opening (m)">${format(record.gateOpening, 2)}</td>
 
-<td>${format(record.q, 2)}</td>
+<td data-label="Q (Cumec)">${format(record.q, 2)}</td>
 
-<td>${format(record.powerhouseOutflow, 2)}</td>
+<td data-label="Powerhouse Outflow (Cumec)">${format(
+      record.powerhouseOutflow,
+      2,
+    )}</td>
 
-<td>${format(record.ukailaCanal, 2)}</td>
+<td data-label="Ukaila Canal (Cumec)">${format(record.ukailaCanal, 2)}</td>
 
-<td><strong>${format(record.totalOutflow, 2)}</strong></td>
+<td data-label="Total Outflow (Cumec)"><strong>${format(
+      record.totalOutflow,
+      2,
+    )}</strong></td>
 
 </tr>
 

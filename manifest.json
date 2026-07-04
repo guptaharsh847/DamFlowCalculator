@@ -1,7 +1,7 @@
 {
   "name": "Atal Sagar Dam Flow Calculator",
   "short_name": "Atal Sagar Dam",
-  "start_url": "/index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f4f7fa",
   "theme_color": "#005a9e",

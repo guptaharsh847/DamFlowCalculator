@@ -948,7 +948,40 @@ MOBILE
   table {
     display: block;
 
-    overflow-x: auto;
+    border: none;
+    overflow-x: hidden;
+  }
+
+  table thead {
+    display: none; /* Hide table headers on mobile */
+  }
+
+  table tbody,
+  table tr {
+    display: block;
+  }
+
+  table tr {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 15px;
+    border: 1px solid var(--border);
+  }
+
+  table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    padding: 12px 15px;
+  }
+
+  table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    text-align: left;
+    margin-right: 15px;
   }
 }
 

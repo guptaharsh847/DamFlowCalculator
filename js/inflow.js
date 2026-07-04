@@ -179,19 +179,22 @@ function renderInflowHistory(history) {
 
 <tr>
 
-<td>${displayDate}</td>
+<td data-label="Date">${displayDate}</td>
 
-<td>${displayTime}</td>
+<td data-label="Time">${displayTime}</td>
 
-<td>${format(record.waterLevel, 2)}</td>
+<td data-label="Water Level (m)">${format(record.waterLevel, 2)}</td>
 
-<td>${format(record.liveCapacity, 2)}</td>
+<td data-label="Live Capacity (MCM)">${format(record.liveCapacity, 2)}</td>
 
-<td>${format(record.capacityDifference, 2)}</td>
+<td data-label="Capacity Difference (MCM)">${format(
+      record.capacityDifference,
+      2,
+    )}</td>
 
-<td>${format(record.timeDifference, 2)}</td>
+<td data-label="Time Difference (Hr)">${format(record.timeDifference, 2)}</td>
 
-<td><strong>${format(record.inflow, 2)}</strong></td>
+<td data-label="Inflow (Cumec)"><strong>${format(record.inflow, 2)}</strong></td>
 
 </tr>
 
