@@ -93,9 +93,9 @@ function renderDashboard(data) {
       previousLevel = history[history.length - 2].waterLevel || 0;
     }
     const levelChange = currentLevel - previousLevel;
-    console.log("currentLevel", currentLevel);
-    console.log("levelChange", levelChange);
-    console.log("previousLevel", previousLevel);
+    // console.log("currentLevel", currentLevel);
+    // console.log("levelChange", levelChange);
+    // console.log("previousLevel", previousLevel);
 
     Dom.html("waterLevelChange", format(Math.abs(levelChange), 2));
 

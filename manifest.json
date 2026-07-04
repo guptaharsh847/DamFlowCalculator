@@ -1,0 +1,21 @@
+{
+  "name": "Atal Sagar Dam Flow Calculator",
+  "short_name": "Atal Sagar Dam",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#005a9e",
+  "description": "A calculator for monitoring inflow and outflow of the Atal Sagar Madikheda Dam.",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

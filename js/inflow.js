@@ -142,8 +142,8 @@ async function loadInflowHistory() {
   try {
     const history = await API.inflowHistory();
 
-    console.log("History Response:", history);
-    console.log("Is Array:", Array.isArray(history));
+    // console.log("History Response:", history);
+    // console.log("Is Array:", Array.isArray(history));
 
     renderInflowHistory(history);
   } catch (error) {

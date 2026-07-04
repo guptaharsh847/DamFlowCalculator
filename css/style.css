@@ -478,6 +478,7 @@ QUICK ACTION
 
 .quickActions {
   display: flex;
+  flex-wrap: wrap;
 
   gap: 20px;
 
