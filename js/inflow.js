@@ -176,12 +176,15 @@ function renderInflowHistory(history) {
     return;
   }
 
-  history.forEach((record) => {
-    const { date: displayDate } = formatDateTime(record.date);
-    const { time: displayTime } = formatDateTime(record.time);
+  history
+    .slice()
+    .reverse()
+    .forEach((record) => {
+      const { date: displayDate } = formatDateTime(record.date);
+      const { time: displayTime } = formatDateTime(record.time);
 
-    // For Desktop Table
-    tableBody.innerHTML += `
+      // For Desktop Table
+      tableBody.innerHTML += `
       <tr>
         <td>${displayDate}</td>
         <td>${displayTime}</td>
@@ -193,8 +196,8 @@ function renderInflowHistory(history) {
       </tr>
     `;
 
-    // For Mobile Cards
-    cardContainer.innerHTML += `
+      // For Mobile Cards
+      cardContainer.innerHTML += `
       <div class="history-card">
         <div class="history-card-header">
           <div class="info">
@@ -213,7 +216,7 @@ function renderInflowHistory(history) {
         </div>
       </div>
     `;
-  });
+    });
 
   // Add event listeners for collapsible cards
   document.querySelectorAll(".history-card-header").forEach((header) => {
