@@ -11,8 +11,6 @@ const Dashboard = {
   latestInflow: Dom.byId("latestInflow"),
 
   currentLevel: Dom.byId("currentLevel"),
-
-  currentCapacity: Dom.byId("currentCapacity"),
 };
 
 /**************************************************************
@@ -25,8 +23,10 @@ window.addEventListener(
 );
 
 async function initDashboard() {
-  Loader.show("Fetching Dashboard Data...");
-  await loadDashboard();
+  Loader.show("Fetching Dashboard Data..."); // Show loader immediately
+  await loadDashboard(); // Fetch and render data
+  setConnectionStatus(true); // Set status after successful load
+  startDashboardAutoRefresh(); // Start the refresh timer
 }
 
 /**************************************************************
@@ -34,13 +34,17 @@ async function initDashboard() {
  **************************************************************/
 async function loadDashboard() {
   try {
-    const response = await API.dashboard();
+    // Fetch both dashboard stats and inflow history at the same time
+    const [dashboardResponse, inflowHistory] = await Promise.all([
+      API.dashboard(),
+      API.inflowHistory(),
+    ]);
 
-    APP.dashboard = response;
-
-    renderDashboard(response);
+    APP.dashboard = { ...dashboardResponse, inflowHistory }; // Combine results
+    renderDashboard(APP.dashboard);
   } catch (error) {
     console.error(error);
+    setConnectionStatus(false); // Set status to offline on error
   }
 }
 
@@ -50,111 +54,75 @@ async function loadDashboard() {
 function renderDashboard(data) {
   if (!data) return;
 
-  if (data.latestOutflow) {
-    Dom.html("latestOutflow", format(data.latestOutflow.totalOutflow));
+  const inflowCard = Dom.byId("inflowCard");
+  const differenceCard = Dom.byId("differenceCard");
+  const waterLevelChangeCard = Dom.byId("waterLevelChangeCard");
 
-    Dom.html("currentLevel", format(data.latestOutflow.waterLevel, 2));
+  let inflowValue = 0;
+  let outflowValue = 0;
+
+  if (data.latestOutflow) {
+    outflowValue = data.latestOutflow.totalOutflow || 0;
+    Dom.html("latestOutflow", format(outflowValue));
+    // Dom.html("currentLevel", format(data.latestOutflow.waterLevel, 2));
+    Dom.html("currentLevel", format(data.latestInflow.waterLevel, 2));
   }
 
   if (data.latestInflow) {
-    Dom.html("latestInflow", format(data.latestInflow.inflow));
+    // --- Water Level Change Calculation ---
+    inflowValue = data.latestInflow.inflow || 0;
+    // Display absolute value for inflow, but use real value for color coding
+    Dom.html("latestInflow", format(Math.abs(inflowValue)));
 
-    Dom.html("currentCapacity", format(data.latestInflow.liveCapacity));
+    if (inflowCard) {
+      inflowCard.classList.remove("card-success", "card-danger");
+      if (inflowValue >= 0) {
+        inflowCard.classList.add("card-success");
+      } else {
+        inflowCard.classList.add("card-danger");
+      }
+    }
+
+    // Use the fetched inflow history for a more reliable calculation
+    const history = data.inflowHistory || [];
+    let currentLevel = 0;
+    let previousLevel = 0;
+    if (history.length >= 2) {
+      // Use the last two records from the history for the most recent data
+      currentLevel = history[history.length - 1].waterLevel || 0;
+      previousLevel = history[history.length - 2].waterLevel || 0;
+    }
+    const levelChange = currentLevel - previousLevel;
+    console.log("currentLevel", currentLevel);
+    console.log("levelChange", levelChange);
+    console.log("previousLevel", previousLevel);
+
+    Dom.html("waterLevelChange", format(Math.abs(levelChange), 2));
+
+    if (waterLevelChangeCard) {
+      waterLevelChangeCard.classList.remove("card-success", "card-danger");
+      if (levelChange >= 0) {
+        waterLevelChangeCard.classList.add("card-success");
+      } else {
+        waterLevelChangeCard.classList.add("card-danger");
+      }
+    }
+    // --- End Water Level Change ---
   }
 
-  renderCharts(data);
-}
+  // Calculate and render the difference
+  const difference = inflowValue - outflowValue;
+  Dom.html("levelDifference", format(difference));
 
-let inflowChartInstance = null;
-let outflowChartInstance = null;
-
-function renderCharts(data) {
-  const inflowHistory = data.inflowHistory || [];
-  const outflowHistory = data.outflowHistory || [];
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: { color: "#6b7280" },
-        grid: { color: "#e5e7eb" },
-      },
-      x: {
-        ticks: { color: "#6b7280" },
-        grid: { display: false },
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    interaction: {
-      intersect: false,
-      mode: "index",
-    },
-  };
-
-  // Inflow Chart
-  const inflowCtx = document.getElementById("inflowChart")?.getContext("2d");
-  if (inflowCtx) {
-    if (inflowChartInstance) {
-      inflowChartInstance.destroy();
+  if (differenceCard) {
+    differenceCard.classList.remove("card-success", "card-danger");
+    if (difference >= 0) {
+      differenceCard.classList.add("card-success");
+    } else {
+      // Display as positive, but card is red
+      Dom.html("levelDifference", format(Math.abs(difference)));
+      differenceCard.classList.add("card-danger");
     }
-    inflowChartInstance = new Chart(inflowCtx, {
-      type: "line",
-      data: {
-        labels: inflowHistory.map((r) => `${r.date.substring(0, 5)} ${r.time}`),
-        datasets: [
-          {
-            label: "Inflow",
-            data: inflowHistory.map((r) => r.inflow),
-            borderColor: "#009cde",
-            backgroundColor: "rgba(0, 156, 222, 0.1)",
-            fill: true,
-            tension: 0.3,
-            pointBackgroundColor: "#009cde",
-            pointRadius: 4,
-          },
-        ],
-      },
-      options: chartOptions,
-    });
-  }
-
-  // Outflow Chart
-  const outflowCtx = document.getElementById("outflowChart")?.getContext("2d");
-  if (outflowCtx) {
-    if (outflowChartInstance) {
-      outflowChartInstance.destroy();
-    }
-    outflowChartInstance = new Chart(outflowCtx, {
-      type: "bar",
-      data: {
-        labels: outflowHistory.map(
-          (r) => `${r.date.substring(0, 5)} ${r.time}`,
-        ),
-        datasets: [
-          {
-            label: "Outflow",
-            data: outflowHistory.map((r) => r.totalOutflow),
-            backgroundColor: "rgba(0, 90, 158, 0.7)",
-            borderColor: "#005a9e",
-            borderWidth: 1,
-            borderRadius: 4,
-          },
-        ],
-      },
-      options: {
-        ...chartOptions,
-        scales: {
-          ...chartOptions.scales,
-          x: { ...chartOptions.scales.x, grid: { display: false } },
-        },
-      },
-    });
   }
 }
 
@@ -297,25 +265,6 @@ document.addEventListener(
 
       refreshDashboard();
     }
-  },
-);
-
-/**************************************************************
- * Startup
- **************************************************************/
-window.addEventListener(
-  "load",
-
-  async () => {
-    try {
-      await loadDashboard();
-
-      setConnectionStatus(true);
-    } catch (error) {
-      setConnectionStatus(false);
-    }
-
-    startDashboardAutoRefresh();
   },
 );
 

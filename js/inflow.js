@@ -172,13 +172,16 @@ function renderInflowHistory(history) {
   }
 
   history.forEach((record) => {
+    const { date: displayDate } = formatDateTime(record.date);
+    const { time: displayTime } = formatDateTime(record.time);
+
     Inflow.historyTable.innerHTML += `
 
 <tr>
 
-<td>${record.date}</td>
+<td>${displayDate}</td>
 
-<td>${record.time}</td>
+<td>${displayTime}</td>
 
 <td>${format(record.waterLevel, 2)}</td>
 

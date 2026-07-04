@@ -23,8 +23,8 @@
   --background: #f4f7fa; /* Lighter, cleaner background */
   --sidebar: #0f172a; /* Dark slate for sidebar */
   --card: #ffffff;
-  --border: #e5e7eb;
-  --text: #1e293b; /* Softer black for text */
+  --border: #e2e8f0;
+  --text: #004a80; /* Dark blue text, as requested */
   --textLight: #6b7280;
 
   --shadow:
@@ -45,6 +45,7 @@ body {
   display: flex;
 
   min-height: 100vh;
+  position: relative;
 }
 
 /* ===========================
@@ -65,33 +66,85 @@ SIDEBAR
   top: 0;
 
   bottom: 0;
-
-  padding: 30px;
+  z-index: 1000;
+  padding: 20px;
+  transition: width 0.3s ease;
 }
 
 .logo {
   display: flex;
-
   align-items: center;
-
-  gap: 10px;
-
-  font-size: 24px;
-
-  margin-bottom: 40px;
+  margin-bottom: 30px;
+  height: 50px;
+  padding: 0 5px; /* Add some padding for alignment */
+}
+.logo h2 {
+  font-size: 22px;
+  margin-left: 10px;
+  white-space: nowrap; /* Prevent text from wrapping */
+  transition: opacity 0.2s ease;
 }
 
-.logo svg {
+.logo-icon {
+  display: flex;
+  align-items: center;
   color: var(--secondary);
   flex-shrink: 0;
 }
 
-.logo h2 {
-  font-size: 26px;
+.sidebar-toggle {
+  margin-top: auto; /* Pushes toggle to the bottom */
+  padding: 15px 0;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 5px;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: color 0.3s;
+  border-top: 1px solid #374151;
+}
+
+.sidebar-toggle:hover {
+  color: var(--white);
+}
+
+/* Collapsed State */
+.sidebar.collapsed {
+  width: 90px;
+}
+
+.sidebar.collapsed .logo h2 {
+  opacity: 0;
+  pointer-events: none; /* Prevent interaction with hidden text */
+}
+
+.sidebar.collapsed .sidebar-toggle svg {
+  transform: rotate(180deg);
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  justify-content: center;
+}
+
+.sidebar.collapsed .nav-text {
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed ul li {
+  justify-content: center;
+}
+
+.sidebar.collapsed .icon {
+  margin-right: 0;
 }
 
 .sidebar ul {
   list-style: none;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidebar .icon {
@@ -99,6 +152,13 @@ SIDEBAR
   font-size: 1.2em;
   display: flex;
   align-items: center;
+}
+
+.nav-text {
+  transition:
+    opacity 0.2s ease,
+    width 0.2s ease;
+  opacity: 1;
 }
 
 .sidebar li {
@@ -135,18 +195,37 @@ MAIN CONTENT
   width: calc(100% - 260px);
 
   padding: 30px;
+  transition:
+    margin-left 0.3s ease,
+    width 0.3s ease;
 }
 
 header {
   display: flex;
 
   justify-content: space-between;
+  /* Have a gap between h1 and date, but keep mobile toggle on far left */
+  align-items: center;
 
   align-items: center;
 
   margin-bottom: 30px;
   flex-wrap: wrap;
   gap: 15px;
+}
+
+.mobile-nav-toggle {
+  display: none; /* Hidden on desktop */
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 5px;
+}
+
+body.sidebar-collapsed .content {
+  margin-left: 90px;
+  width: calc(100% - 90px);
 }
 
 header h1 {
@@ -189,6 +268,24 @@ CARDS
 
 .card:hover {
   transform: translateY(-5px);
+}
+
+.card.card-success {
+  background-color: #f0fdf4; /* Green-50 */
+  border-left: 5px solid var(--success);
+}
+.card.card-success h2,
+.card.card-success h3 {
+  color: #15803d; /* Green-700 */
+}
+
+.card.card-danger {
+  background-color: #fef2f2; /* Red-50 */
+  border-left: 5px solid var(--danger);
+}
+.card.card-danger h2,
+.card.card-danger h3 {
+  color: #b91c1c; /* Red-700 */
 }
 
 .card h3 {
@@ -787,26 +884,42 @@ MOBILE
 }
 
 @media (max-width: 992px) {
-  .sidebar {
-    width: 90px;
-
-    padding: 20px 10px;
-  }
-
-  .sidebar h2 {
+  .sidebar-toggle {
     display: none;
   }
 
-  .sidebar .icon {
-    margin-right: 0;
+  .sidebar {
+    position: fixed;
+    left: -280px; /* Hidden by default */
+    width: 260px;
+    transition: left 0.3s ease;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .sidebar.open {
+    left: 0;
   }
 
   .content {
-    margin-left: 90px;
+    margin-left: 0;
+    width: 100%;
+  }
 
-    width: calc(100% - 90px);
+  .mobile-nav-toggle {
+    display: block;
+  }
 
-    padding: 25px;
+  header {
+    justify-content: flex-start;
+  }
+
+  header h1 {
+    font-size: 22px;
+    margin-left: 15px;
+  }
+
+  #currentDateTime {
+    margin-left: auto; /* Pushes date to the right */
   }
 }
 
@@ -839,20 +952,12 @@ MOBILE
 }
 
 @media (max-width: 480px) {
-  .sidebar {
-    display: none;
-  }
-
-  .content {
-    margin-left: 0;
-
-    width: 100%;
-
-    padding: 18px;
-  }
-
   header h1 {
     font-size: 24px;
+  }
+
+  .card h3 {
+    font-size: 15px;
   }
 
   .card h2 {

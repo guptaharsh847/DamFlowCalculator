@@ -151,6 +151,46 @@ function format(value, digit = 3) {
   return Number(value).toFixed(digit);
 }
 /***********************************************************************
+ * Date & Time Formatter for API responses
+ ***********************************************************************/
+function formatDateTime(isoString) {
+  if (!isoString || typeof isoString !== "string") {
+    return { date: "--", time: "--" };
+  }
+  try {
+    const dateObj = new Date(isoString);
+    if (isNaN(dateObj.getTime())) {
+      return { date: "Invalid Date", time: "" };
+    }
+
+    // Handle Google Sheets time-only artifact (e.g., 1899-12-30T...)
+    if (dateObj.getFullYear() < 1970) {
+      return {
+        date: "N/A",
+        time: dateObj.toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+          timeZone: "Asia/Kolkata", // Convert to IST
+        }),
+      };
+    }
+
+    return {
+      date: dateObj.toLocaleDateString("en-GB").replace(/\//g, "-"),
+      time: dateObj.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Kolkata",
+      }),
+    };
+  } catch (e) {
+    console.error("Error formatting date:", isoString, e);
+    return { date: "--", time: "--" };
+  }
+}
+/***********************************************************************
  * Date & Time
  ***********************************************************************/
 
