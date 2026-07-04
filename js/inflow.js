@@ -155,19 +155,24 @@ async function loadInflowHistory() {
  * Render History
  **************************************************************/
 function renderInflowHistory(history) {
-  if (!Inflow.historyTable) return;
+  const tableBody = Inflow.historyTable;
+  const cardContainer = Dom.byId("inflowCardContainer");
 
-  Inflow.historyTable.innerHTML = "";
+  if (!tableBody || !cardContainer) return;
+
+  tableBody.innerHTML = "";
+  cardContainer.innerHTML = "";
 
   if (!history || history.length === 0) {
-    Inflow.historyTable.innerHTML = `
+    const noRecordsHtml = `
             <tr>
                 <td colspan="7" class="text-center">
                     No Records Found
                 </td>
             </tr>
         `;
-
+    tableBody.innerHTML = noRecordsHtml;
+    cardContainer.innerHTML = `<div class="text-center" style="padding: 20px;">No Records Found</div>`;
     return;
   }
 
@@ -175,31 +180,71 @@ function renderInflowHistory(history) {
     const { date: displayDate } = formatDateTime(record.date);
     const { time: displayTime } = formatDateTime(record.time);
 
-    Inflow.historyTable.innerHTML += `
+    // For Desktop Table
+    tableBody.innerHTML += `
+      <tr>
+        <td>${displayDate}</td>
+        <td>${displayTime}</td>
+        <td>${format(record.waterLevel, 2)}</td>
+        <td>${format(record.liveCapacity, 2)}</td>
+        <td>${format(record.capacityDifference, 2)}</td>
+        <td>${format(record.timeDifference, 2)}</td>
+        <td><strong>${format(record.inflow, 2)}</strong></td>
+      </tr>
+    `;
 
-<tr>
-
-<td data-label="Date">${displayDate}</td>
-
-<td data-label="Time">${displayTime}</td>
-
-<td data-label="Water Level (m)">${format(record.waterLevel, 2)}</td>
-
-<td data-label="Live Capacity (MCM)">${format(record.liveCapacity, 2)}</td>
-
-<td data-label="Capacity Difference (MCM)">${format(
-      record.capacityDifference,
-      2,
-    )}</td>
-
-<td data-label="Time Difference (Hr)">${format(record.timeDifference, 2)}</td>
-
-<td data-label="Inflow (Cumec)"><strong>${format(record.inflow, 2)}</strong></td>
-
-</tr>
-
-`;
+    // For Mobile Cards
+    cardContainer.innerHTML += `
+      <div class="history-card">
+        <div class="history-card-header">
+          <div class="info">
+            <h4>Total Inflow: ${format(record.inflow, 2)}</h4>
+            <small>${displayDate} at ${displayTime}</small>
+          </div>
+          <span class="arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </span>
+        </div>
+        <div class="history-card-body">
+          <div class="prediction-detail"><span>Water Level (m)</span><span>${format(record.waterLevel, 2)}</span></div>
+          <div class="prediction-detail"><span>Live Capacity (MCM)</span><span>${format(record.liveCapacity, 2)}</span></div>
+          <div class="prediction-detail"><span>Capacity Diff (MCM)</span><span>${format(record.capacityDifference, 2)}</span></div>
+          <div class="prediction-detail"><span>Time Diff (Hr)</span><span>${format(record.timeDifference, 2)}</span></div>
+        </div>
+      </div>
+    `;
   });
+
+  // Add event listeners for collapsible cards
+  document.querySelectorAll(".history-card-header").forEach((header) => {
+    header.addEventListener("click", () => {
+      const body = header.nextElementSibling;
+      header.classList.toggle("active");
+      body.classList.toggle("open");
+    });
+  });
+
+  // Toggle visibility based on screen size
+  const handleView = () => {
+    const table = Dom.byId("inflowHistory").parentElement; // The table element
+    if (window.innerWidth <= 768) {
+      table.classList.add("hidden");
+      cardContainer.classList.remove("hidden");
+      Dom.byId("inflowHistory").parentElement.style.display = "none";
+    } else {
+      table.classList.remove("hidden");
+      cardContainer.classList.add("hidden");
+      Dom.byId("inflowHistory").parentElement.style.display = "";
+    }
+  };
+
+  if (window.innerWidth > 768) {
+    Dom.byId("inflowHistory").parentElement.style.display = "";
+  }
+
+  window.removeEventListener("resize", handleView);
+  window.addEventListener("resize", handleView);
+  handleView();
 }
 
 /**************************************************************

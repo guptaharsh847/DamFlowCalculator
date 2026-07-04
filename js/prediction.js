@@ -13,6 +13,15 @@ window.addEventListener("DOMContentLoaded", initPrediction);
 function initPrediction() {
   runPrediction();
   Dom.byId("refreshPrediction")?.addEventListener("click", runPrediction);
+
+  // Handle disclaimer close button
+  const disclaimer = document.querySelector(".fixed-disclaimer");
+  const closeBtn = document.querySelector(".close-disclaimer-btn");
+  if (disclaimer && closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      disclaimer.classList.add("hidden");
+    });
+  }
 }
 
 /**************************************************************
@@ -23,8 +32,6 @@ async function runPrediction() {
 
   try {
     const response = await API.prediction();
-
-    console.log("Prediction Response:", response);
 
     renderPrediction(response);
   } catch (error) {
@@ -68,26 +75,30 @@ function renderPrediction(response) {
   if (Dom.byId("netFlow")) Dom.html("netFlow", format(data.netFlow, 2));
 
   // Table
-  const tbody = Dom.byId("predictionTableBody");
+  const tableBody = Dom.byId("predictionTableBody");
+  const cardContainer = Dom.byId("predictionCardContainer");
 
-  if (!tbody) return;
+  if (!tableBody || !cardContainer) return;
 
-  tbody.innerHTML = "";
+  tableBody.innerHTML = "";
+  cardContainer.innerHTML = "";
 
   if (!data.prediction || data.prediction.length === 0) {
-    tbody.innerHTML = `
+    const noRecordsHtml = `
             <tr>
                 <td colspan="4" style="text-align:center">
                     No prediction available
                 </td>
             </tr>
         `;
-
+    tableBody.innerHTML = noRecordsHtml;
+    cardContainer.innerHTML = noRecordsHtml; // Or a more card-friendly message
     return;
   }
 
   data.prediction.forEach((item) => {
-    tbody.innerHTML += `
+    // For Desktop Table
+    tableBody.innerHTML += `
             <tr>
 
                 <td>${item.hour} Hr</td>
@@ -100,10 +111,46 @@ function renderPrediction(response) {
 
             </tr>
         `;
+
+    // For Mobile Cards
+    cardContainer.innerHTML += `
+      <div class="prediction-card">
+        <div class="prediction-card-hour">${item.hour} Hour Prediction</div>
+        <div class="prediction-card-main">
+          <div class="value">${format(item.predictedWaterLevel, 2)} m</div>
+          <div class="label">Predicted Water Level</div>
+        </div>
+        <div class="prediction-card-details">
+          <div class="detail-item">
+            <div class="value">${format(item.predictedCapacity, 3)}</div>
+            <div class="label">Capacity (MCM)</div>
+          </div>
+          <div class="detail-item">
+            <div class="value">${format(item.addedMCM, 3)}</div>
+            <div class="label">Added (MCM)</div>
+          </div>
+        </div>
+      </div>
+    `;
   });
 
   // Graph
   renderPredictionChart(data.prediction);
+
+  // Toggle visibility based on screen size
+  const handleView = () => {
+    if (window.innerWidth <= 768) {
+      Dom.byId("predictionTable").classList.add("hidden");
+      Dom.byId("predictionCardContainer").classList.remove("hidden");
+    } else {
+      Dom.byId("predictionTable").classList.remove("hidden");
+      Dom.byId("predictionCardContainer").classList.add("hidden");
+    }
+  };
+
+  window.removeEventListener("resize", handleView); // Prevent multiple listeners
+  window.addEventListener("resize", handleView);
+  handleView(); // Initial check
 }
 /**************************************************************
  * Build Table Row

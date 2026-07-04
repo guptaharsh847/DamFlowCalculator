@@ -193,19 +193,24 @@ async function loadOutflowHistory() {
  * Render History
  **************************************************************/
 function renderOutflowHistory(history) {
-  if (!Outflow.historyTable) return;
+  const tableBody = Outflow.historyTable;
+  const cardContainer = Dom.byId("historyCardContainer");
 
-  Outflow.historyTable.innerHTML = "";
+  if (!tableBody || !cardContainer) return;
+
+  tableBody.innerHTML = "";
+  cardContainer.innerHTML = "";
 
   if (!history || history.length === 0) {
-    Outflow.historyTable.innerHTML = `
+    const noRecordsHtml = `
             <tr>
                 <td colspan="9" class="text-center">
                     No Records Found
                 </td>
             </tr>
         `;
-
+    tableBody.innerHTML = noRecordsHtml;
+    cardContainer.innerHTML = `<div class="text-center" style="padding: 20px;">No Records Found</div>`;
     return;
   }
 
@@ -213,36 +218,78 @@ function renderOutflowHistory(history) {
     const { date: displayDate } = formatDateTime(record.date);
     const { time: displayTime } = formatDateTime(record.time);
 
-    Outflow.historyTable.innerHTML += `
+    // For Desktop Table
+    tableBody.innerHTML += `
+      <tr>
+        <td>${displayDate}</td>
+        <td>${displayTime}</td>
+        <td>${format(record.waterLevel, 2)}</td>
+        <td>${format(record.gateOpening, 2)}</td>
+        <td>${format(record.q, 2)}</td>
+        <td>${format(record.powerhouseOutflow, 2)}</td>
+        <td>${format(record.ukailaCanal, 2)}</td>
+        <td><strong>${format(record.totalOutflow, 2)}</strong></td>
+      </tr>
+    `;
 
-<tr>
-
-<td data-label="Date">${displayDate}</td>
-
-<td data-label="Time">${displayTime}</td>
-
-<td data-label="Water Level (m)">${format(record.waterLevel, 2)}</td>
-
-<td data-label="Gate Opening (m)">${format(record.gateOpening, 2)}</td>
-
-<td data-label="Q (Cumec)">${format(record.q, 2)}</td>
-
-<td data-label="Powerhouse Outflow (Cumec)">${format(
-      record.powerhouseOutflow,
-      2,
-    )}</td>
-
-<td data-label="Ukaila Canal (Cumec)">${format(record.ukailaCanal, 2)}</td>
-
-<td data-label="Total Outflow (Cumec)"><strong>${format(
-      record.totalOutflow,
-      2,
-    )}</strong></td>
-
-</tr>
-
-`;
+    // For Mobile Cards
+    cardContainer.innerHTML += `
+      <div class="history-card">
+        <div class="history-card-header">
+          <div class="info">
+            <h4>Total Outflow: ${format(record.totalOutflow, 2)}</h4>
+            <small>${displayDate} at ${displayTime}</small>
+          </div>
+          <span class="arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </span>
+        </div>
+        <div class="history-card-body">
+          <div class="prediction-detail"><span>Water Level (m)</span><span>${format(record.waterLevel, 2)}</span></div>
+          <div class="prediction-detail"><span>Gate Opening (m)</span><span>${format(record.gateOpening, 2)}</span></div>
+          <div class="prediction-detail"><span>Gate Discharge</span><span>${format(record.q, 2)}</span></div>
+          <div class="prediction-detail"><span>Powerhouse Outflow</span><span>${format(record.powerhouseOutflow, 2)}</span></div>
+          <div class="prediction-detail"><span>Ukaila Canal</span><span>${format(record.ukailaCanal, 2)}</span></div>
+        </div>
+      </div>
+    `;
   });
+
+  // Add event listeners for collapsible cards
+  document.querySelectorAll(".history-card-header").forEach((header) => {
+    header.addEventListener("click", () => {
+      const body = header.nextElementSibling;
+      header.classList.toggle("active");
+      body.classList.toggle("open");
+    });
+  });
+
+  // Toggle visibility based on screen size
+  const handleView = () => {
+    const table = Dom.byId("historyTable").parentElement; // The table element itself
+    if (window.innerWidth <= 768) {
+      // On mobile, hide the default responsive table behavior and show cards
+      table.classList.add("hidden");
+      cardContainer.classList.remove("hidden");
+      // Remove the block display from the main table to prevent it from showing
+      Dom.byId("historyTable").style.display = "none";
+    } else {
+      // On desktop, show the table and hide cards
+      table.classList.remove("hidden");
+      cardContainer.classList.add("hidden");
+      // Restore table display
+      Dom.byId("historyTable").style.display = "";
+    }
+  };
+
+  // We need to override the default CSS for tables on mobile
+  if (window.innerWidth > 768) {
+    Dom.byId("historyTable").style.display = "";
+  }
+
+  window.removeEventListener("resize", handleView); // Prevent multiple listeners
+  window.addEventListener("resize", handleView);
+  handleView(); // Initial check
 }
 
 /**************************************************************

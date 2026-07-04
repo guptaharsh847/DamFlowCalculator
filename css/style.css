@@ -1011,6 +1011,200 @@ MOBILE
 }
 
 /* ===========================
+PREDICTION CARDS (MOBILE)
+=========================== */
+@media (max-width: 768px) {
+  .prediction-card {
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    padding: 15px;
+    text-align: center;
+  }
+
+  .prediction-card-hour {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .prediction-card-main {
+    margin: 20px 0;
+  }
+
+  .prediction-card-main .value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .prediction-card-main .label {
+    font-size: 14px;
+    color: var(--textLight);
+  }
+
+  .prediction-card-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+  }
+
+  .prediction-card-details .detail-item .value {
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .prediction-card-details .detail-item .label {
+    font-size: 13px;
+    color: var(--textLight);
+  }
+
+}
+
+/* ===========================
+HISTORY CARDS (MOBILE)
+=========================== */
+@media (max-width: 768px) {
+  .history-card {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 15px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .history-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    cursor: pointer;
+    background-color: #f9fafb;
+  }
+
+  .history-card-header .info h4 {
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .history-card-header .info small {
+    color: var(--textLight);
+    font-size: 13px;
+  }
+
+  .history-card-header .arrow {
+    transition: transform 0.3s ease;
+  }
+
+  .history-card-header.active .arrow {
+    transform: rotate(90deg);
+  }
+
+  .history-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding: 0 15px;
+  }
+
+  .history-card-body.open {
+    max-height: 500px; /* Adjust as needed */
+    padding: 15px;
+  }
+
+  .history-card .prediction-detail { /* Reusing prediction-detail style */
+    border-color: var(--border);
+  }
+}
+
+/* ===========================
+DISCLAIMER BOX
+=========================== */
+.disclaimer-box {
+  background-color: #fffbe6; /* Warning-50 */
+  border: 1px solid #fde68a; /* Warning-200 */
+  border-left: 5px solid var(--warning);
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 30px;
+}
+
+.disclaimer-box h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #b45309; /* Warning-700 */
+  margin-bottom: 10px;
+}
+
+.disclaimer-box p {
+  color: #78350f; /* Warning-800 */
+  line-height: 1.6;
+}
+
+.close-disclaimer-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af; /* Gray-400 */
+  padding: 5px;
+  border-radius: 50%;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.close-disclaimer-btn:hover {
+  background-color: #f3f4f6; /* Gray-100 */
+  color: #4b5563; /* Gray-600 */
+}
+
+.fixed-disclaimer {
+  position: fixed;
+  bottom: 0;
+  left: 260px;
+  right: 0;
+  z-index: 900;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  margin: 0;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition:
+    left 0.3s ease,
+    transform 0.3s ease-out;
+}
+
+.fixed-disclaimer.hidden {
+  transform: translateY(100%);
+  display: block; /* Override default .hidden display:none for transition */
+}
+
+body.sidebar-collapsed .fixed-disclaimer {
+  left: 90px;
+}
+
+@media (max-width: 992px) {
+  .fixed-disclaimer {
+    left: 0;
+  }
+}
+
+/* ===========================
 PRINT
 =========================== */
 
