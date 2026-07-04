@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>History | Atal Sagar Madikheda Dam</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script defer src="js/config.js"></script>
+    <script defer src="js/api.js"></script>
+    <!-- <script defer src="js/common.js"></script -->
+    <script defer src="js/history.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+
+      <aside class="sidebar">
+        <div class="logo">
+          🌊
+
+          <h2>Atal Sagar Dam</h2>
+        </div>
+
+        <ul>
+          <li onclick="location.href = 'index.html'"><span class="icon">📊</span> Dashboard</li>
+
+          <li onclick="location.href = 'outflow.html'"><span class="icon">➡️</span> Outflow</li>
+
+          <li onclick="location.href = 'inflow.html'"><span class="icon">⬅️</span> Inflow</li>
+
+          <li class="active"><span class="icon">📜</span> History</li>
+        </ul>
+      </aside>
+
+      <!-- Main Content -->
+
+      <main class="content">
+        <header>
+          <h1>Calculation History</h1>
+
+          <div id="currentDateTime"></div>
+        </header>
+
+        <!-- Filters -->
+
+        <section class="formCard">
+          <h2>Filter Records</h2>
+
+          <div class="formGrid">
+            <div class="inputGroup">
+              <label> Record Type </label>
+
+              <select id="historyType" title="Select Record Type">
+                <option value="all">All</option>
+
+                <option value="outflow">Outflow</option>
+
+                <option value="inflow">Inflow</option>
+              </select>
+            </div>
+
+            <div class="inputGroup">
+              <label> Search Date </label>
+
+              <input
+                type="date"
+                id="historyDate"
+                title="Select Search Date"
+                placeholder="Select Search Date"
+              />
+            </div>
+          </div>
+
+          <div class="buttonRow">
+            <button class="primaryBtn" id="filterHistoryBtn">
+              Apply Filter
+            </button>
+
+            <button class="secondaryBtn" id="clearFilterBtn">
+              Clear Filter
+            </button>
+          </div>
+        </section>
+
+        <!-- Outflow History -->
+
+        <section class="historyBox">
+          <div class="historyHeader">
+            <h2>Last 10 Outflow Records</h2>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Water Level</th>
+                <th>Total Outflow</th>
+              </tr>
+            </thead>
+
+            <tbody id="outflowHistoryTable">
+              <tr>
+                <td colspan="4">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Inflow History -->
+
+        <section class="historyBox">
+          <div class="historyHeader">
+            <h2>Last 20 Inflow Records</h2>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Water Level</th>
+                <th>Calculated Inflow</th>
+              </tr>
+            </thead>
+
+            <tbody id="inflowHistoryTable">
+              <tr>
+                <td colspan="4">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+
+    <!-- Loader -->
+
+    <div id="loader" class="loader hidden">
+      <div class="spinner"></div>
+
+      <p>Loading History...</p>
+    </div>
+  </body>
+</html>
