@@ -50,26 +50,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // PWA Install Prompt
   let deferredPrompt;
-  const installBtn = document.getElementById("installBtn");
+  const installPopup = document.getElementById("installPopup");
+  const installConfirmBtn = document.getElementById("installConfirmBtn");
+  const installCancelBtn = document.getElementById("installCancelBtn");
 
   window.addEventListener("beforeinstallprompt", (e) => {
     // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
     // Stash the event so it can be triggered later.
     deferredPrompt = e;
-    // Update UI to notify the user they can install the PWA
-    if (installBtn) {
-      installBtn.classList.remove("hidden");
+    // Show the install popup
+    if (installPopup) {
+      installPopup.classList.remove("hidden");
     }
   });
 
-  if (installBtn) {
-    installBtn.addEventListener("click", async () => {
+  if (installConfirmBtn) {
+    installConfirmBtn.addEventListener("click", async () => {
       if (deferredPrompt) {
+        // Show the browser's install prompt
         deferredPrompt.prompt();
+        // We can't know the result, so we'll assume it was accepted and hide the popup
         deferredPrompt = null;
-        installBtn.classList.add("hidden");
+        installPopup.classList.add("hidden");
       }
+    });
+  }
+
+  if (installCancelBtn) {
+    installCancelBtn.addEventListener("click", () => {
+      installPopup.classList.add("hidden");
     });
   }
 });

@@ -208,9 +208,6 @@
             Calculate Inflow
           </button>
 
-          <button id="installBtn" class="primaryBtn hidden" title="Install App">
-            Install App
-          </button>
         </section>
       </main>
     </div>
@@ -219,6 +216,16 @@
     <div id="loader" class="loader hidden">
       <div class="spinner"></div>
       <p id="loaderText">Loading...</p>
+    </div>
+
+    <!-- PWA Install Popup -->
+    <div id="installPopup" class="install-popup hidden">
+      <h3>Install Atal Sagar Dam App</h3>
+      <p>For a better experience, install this app on your device. It's fast and works offline.</p>
+      <div class="install-popup-actions">
+        <button id="installCancelBtn" class="secondaryBtn">Not Now</button>
+        <button id="installConfirmBtn" class="primaryBtn">Install</button>
+      </div>
     </div>
   </body>
 </html>

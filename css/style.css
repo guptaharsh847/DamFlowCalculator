@@ -995,6 +995,48 @@ PRINT
   }
 }
 
+/* ===========================
+PWA INSTALL POPUP
+=========================== */
+
+.install-popup {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  background-color: var(--white);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  width: 90%;
+  max-width: 450px;
+  padding: 25px;
+  animation: slideUp 0.5s ease-out;
+}
+
+.install-popup h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.install-popup p {
+  font-size: 15px;
+  color: var(--textLight);
+  margin-bottom: 20px;
+}
+
+.install-popup-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+
+.install-popup .secondaryBtn {
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
 /* ==========================================================
 END OF FILE
 ========================================================== */
