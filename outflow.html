@@ -127,7 +127,9 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg
+                <polyline
+                  points="22 12 18 12 15 21 9 3 6 12 2 12"
+                ></polyline></svg
             ></span>
             <span class="nav-text">Prediction</span>
           </li>
@@ -193,15 +195,101 @@
               />
             </div>
 
-            <div class="inputGroup">
-              <label> Gate Opening (m) </label>
-
-              <input
-                type="number"
-                id="gateOpening"
-                step="0.01"
-                placeholder="Enter Gate Opening"
-              />
+            <div class="inputGroup" style="grid-column: 1 / -1">
+              <label>Gate Openings (m)</label>
+              <div class="gate-inputs-grid">
+                <!-- 10 gate inputs -->
+                <div class="gate-input">
+                  <label for="gateOpening1">Gate 1</label>
+                  <input
+                    type="number"
+                    id="gateOpening1"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+                <div class="gate-input">
+                  <label for="gateOpening2">Gate 2</label>
+                  <input
+                    type="number"
+                    id="gateOpening2"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+                <div class="gate-input">
+                  <label for="gateOpening3">Gate 3</label>
+                  <input
+                    type="number"
+                    id="gateOpening3"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+                <div class="gate-input">
+                  <label for="gateOpening4">Gate 4</label>
+                  <input
+                    type="number"
+                    id="gateOpening4"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+                <div class="gate-input">
+                  <label for="gateOpening5">Gate 5</label>
+                  <input
+                    type="number"
+                    id="gateOpening5"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+                <div class="gate-input">
+                  <label for="gateOpening6">Gate 6</label>
+                  <input
+                    type="number"
+                    id="gateOpening6"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+                <div class="gate-input">
+                  <label for="gateOpening7">Gate 7</label>
+                  <input
+                    type="number"
+                    id="gateOpening7"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+                <div class="gate-input">
+                  <label for="gateOpening8">Gate 8</label>
+                  <input
+                    type="number"
+                    id="gateOpening8"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+                <div class="gate-input">
+                  <label for="gateOpening9">Gate 9</label>
+                  <input
+                    type="number"
+                    id="gateOpening9"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+                <div class="gate-input">
+                  <label for="gateOpening10">Gate 10</label>
+                  <input
+                    type="number"
+                    id="gateOpening10"
+                    step="0.01"
+                    value="0"
+                  />
+                </div>
+              </div>
             </div>
 
             <div class="inputGroup">
@@ -244,9 +332,51 @@
           <table class="resultTable">
             <tbody>
               <tr>
-                <td>Gate Discharge</td>
+                <td>Total Gate Discharge</td>
 
                 <td id="qValue">--</td>
+              </tr>
+
+              <!-- Individual Gate Discharges -->
+              <tr class="gate-discharge-row">
+                <td>Gate 1 Discharge (q1)</td>
+                <td id="q1Value">--</td>
+              </tr>
+              <tr class="gate-discharge-row">
+                <td>Gate 2 Discharge (q2)</td>
+                <td id="q2Value">--</td>
+              </tr>
+              <tr class="gate-discharge-row">
+                <td>Gate 3 Discharge (q3)</td>
+                <td id="q3Value">--</td>
+              </tr>
+              <tr class="gate-discharge-row">
+                <td>Gate 4 Discharge (q4)</td>
+                <td id="q4Value">--</td>
+              </tr>
+              <tr class="gate-discharge-row">
+                <td>Gate 5 Discharge (q5)</td>
+                <td id="q5Value">--</td>
+              </tr>
+              <tr class="gate-discharge-row">
+                <td>Gate 6 Discharge (q6)</td>
+                <td id="q6Value">--</td>
+              </tr>
+              <tr class="gate-discharge-row">
+                <td>Gate 7 Discharge (q7)</td>
+                <td id="q7Value">--</td>
+              </tr>
+              <tr class="gate-discharge-row">
+                <td>Gate 8 Discharge (q8)</td>
+                <td id="q8Value">--</td>
+              </tr>
+              <tr class="gate-discharge-row">
+                <td>Gate 9 Discharge (q9)</td>
+                <td id="q9Value">--</td>
+              </tr>
+              <tr class="gate-discharge-row">
+                <td>Gate 10 Discharge (q10)</td>
+                <td id="q10Value">--</td>
               </tr>
 
               <tr>

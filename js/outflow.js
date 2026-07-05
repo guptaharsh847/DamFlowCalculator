@@ -12,8 +12,6 @@
 const Outflow = {
   waterLevel: Dom.byId("waterLevel"),
 
-  gateOpening: Dom.byId("gateOpening"),
-
   powerhouseHours: Dom.byId("powerhouseHours"),
 
   ukailaCanal: Dom.byId("ukailaCanal"),
@@ -61,23 +59,25 @@ function bindEvents() {
   }
 
   [
-    Outflow.waterLevel,
-    Outflow.gateOpening,
+    Outflow.waterLevel, // Existing inputs
     Outflow.powerhouseHours,
     Outflow.ukailaCanal,
-  ].forEach((input) => {
-    if (!input) return;
+    ...Array.from({ length: 10 }, (_, i) => Dom.byId(`gateOpening${i + 1}`)), // Gate inputs
+  ]
+    .filter(Boolean) // Filter out nulls if any element is not found
+    .forEach((input) => {
+      if (!input) return;
 
-    input.addEventListener(
-      "keypress",
+      input.addEventListener(
+        "keypress",
 
-      function (e) {
-        if (e.key === "Enter") {
-          calculateOutflow();
-        }
-      },
-    );
-  });
+        function (e) {
+          if (e.key === "Enter") {
+            calculateOutflow();
+          }
+        },
+      );
+    });
 }
 
 /**************************************************************
@@ -93,14 +93,12 @@ function validateOutflowForm() {
   )
     return false;
 
-  if (
-    !Validator.number(
-      "gateOpening",
-
-      "Gate Opening",
-    )
-  )
-    return false;
+  // Validate all 10 gate openings
+  for (let i = 1; i <= 10; i++) {
+    if (!Validator.number(`gateOpening${i}`, `Gate ${i} Opening`)) {
+      return false;
+    }
+  }
 
   if (
     !Validator.number(
@@ -136,15 +134,25 @@ async function calculateOutflow() {
 
     const payload = {
       waterLevel: Dom.number("waterLevel"),
-
-      gateOpening: Dom.number("gateOpening"),
-
       powerhouseHours: Dom.number("powerhouseHours"),
-
       ukailaCanal: Dom.number("ukailaCanal"),
+      returnIndividual: true, // Request individual q values from the backend
     };
 
+    // Add all 10 gate openings to the payload
+    for (let i = 1; i <= 10; i++) {
+      payload[`gateOpening${i}`] = Dom.number(`gateOpening${i}`);
+    }
+
+    // Calculate total gate opening for history/display purposes
+    payload.gateOpening = Object.values(payload)
+      .slice(4) // Skips waterLevel, powerhouseHours, ukailaCanal, and returnIndividual
+      .reduce((sum, val) => sum + (val || 0), 0);
+
     const response = await API.calculateOutflow(payload);
+
+    // Log the full API response to the console for debugging
+    console.log("Full API Response:", response);
 
     updateOutflowResult(response);
 
@@ -167,6 +175,27 @@ async function calculateOutflow() {
  * Update Result Cards
  **************************************************************/
 function updateOutflowResult(response) {
+  // Since the API isn't returning individual q values, we'll calculate them on the frontend
+  // based on the total 'q' and the individual gate openings.
+
+  let totalOpening = 0;
+  for (let i = 1; i <= 10; i++) {
+    totalOpening += Dom.number(`gateOpening${i}`);
+  }
+
+  const totalGateDischarge = response.q || 0;
+
+  for (let i = 1; i <= 10; i++) {
+    const gateOpening = Dom.number(`gateOpening${i}`);
+    let individualDischarge = 0;
+
+    if (totalOpening > 0 && gateOpening > 0) {
+      individualDischarge = (totalGateDischarge / totalOpening) * gateOpening;
+    }
+    Dom.html(`q${i}Value`, format(individualDischarge));
+  }
+
+  // Always show the total gate discharge (q)
   Dom.html("qValue", format(response.q));
 
   Dom.html("powerhouseValue", format(response.powerhouseOutflow));
@@ -314,6 +343,11 @@ function resetOutflowForm() {
 function clearOutflowResult() {
   Dom.html("qValue", "--");
 
+  // Also clear individual gate discharge rows
+  for (let i = 1; i <= 10; i++) {
+    Dom.html(`q${i}Value`, "--");
+  }
+
   Dom.html("powerhouseValue", "--");
 
   Dom.html("ukailaValue", "--");
@@ -365,40 +399,36 @@ function copyTotalOutflow() {
  * Auto Format Numbers
  **************************************************************/
 function autoFormatInputs() {
-  [
-    Outflow.waterLevel,
-    Outflow.gateOpening,
-    Outflow.powerhouseHours,
-    Outflow.ukailaCanal,
-  ].forEach((input) => {
-    if (!input) return;
+  [...document.querySelectorAll('.formGrid input[type="number"]')].forEach(
+    (input) => {
+      if (!input) return;
 
-    input.addEventListener("blur", function () {
-      if (this.value === "") return;
+      input.addEventListener("blur", function () {
+        if (this.value === "") return;
+        const value = Number(this.value);
 
-      const value = Number(this.value);
+        if (isNaN(value)) return;
 
-      if (isNaN(value)) return;
+        switch (this.id) {
+          case "waterLevel":
+            this.value = value.toFixed(2);
+            break;
 
-      switch (this.id) {
-        case "waterLevel":
+          case "powerhouseHours": // Falls through
+            this.value = value.toFixed(2);
+            break;
+
+          case "ukailaCanal":
+            this.value = value.toFixed(3);
+            break;
+        }
+
+        if (this.id.startsWith("gateOpening")) {
           this.value = value.toFixed(2);
-          break;
-
-        case "gateOpening":
-          this.value = value.toFixed(2);
-          break;
-
-        case "powerhouseHours":
-          this.value = value.toFixed(2);
-          break;
-
-        case "ukailaCanal":
-          this.value = value.toFixed(3);
-          break;
-      }
-    });
-  });
+        }
+      });
+    },
+  );
 }
 
 /**************************************************************
@@ -458,8 +488,6 @@ function exportOutflowJSON() {
 
     waterLevel: Dom.number("waterLevel"),
 
-    gateOpening: Dom.number("gateOpening"),
-
     powerhouseHours: Dom.number("powerhouseHours"),
 
     ukailaCanal: Dom.number("ukailaCanal"),
@@ -470,6 +498,11 @@ function exportOutflowJSON() {
 
     totalOutflow: Dom.byId("totalOutflow").innerText,
   };
+
+  // Add gate openings to the export
+  for (let i = 1; i <= 10; i++) {
+    result[`gateOpening${i}`] = Dom.number(`gateOpening${i}`);
+  }
 
   const blob = new Blob(
     [JSON.stringify(result, null, 2)],
@@ -507,9 +540,10 @@ window.addEventListener("load", () => {
 function debugOutflow() {
   console.table({
     waterLevel: Dom.number("waterLevel"),
-
-    gateOpening: Dom.number("gateOpening"),
-
+    gateOpening1: Dom.number("gateOpening1"),
+    gateOpening2: Dom.number("gateOpening2"),
+    // ... and so on for all 10 gates if needed for debugging
+    gateOpening10: Dom.number("gateOpening10"),
     powerhouseHours: Dom.number("powerhouseHours"),
 
     ukailaCanal: Dom.number("ukailaCanal"),
