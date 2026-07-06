@@ -121,9 +121,26 @@ const API = (() => {
    * Water Level Prediction
    *****************************************************/
   async function prediction() {
-    console.log('request raised')
+    console.log("request raised");
     return await request("GET", null, "prediction");
   }
+
+  /*****************************************************
+   * Manual Calculator (No Save)
+   *****************************************************/
+  // async function manualCalculateOutflow(data) {
+  //     const response = await request("GET", data, "manualCalculateOutflow");
+  //     return response.data;
+  // }
+ async function manualCalculateOutflow(data) {
+  const response = await request("GET", data, "manualCalculateOutflow");
+  console.log("Response inside API:", response);
+  return response;
+}
+async function manualCalculateInflow(data) {
+  return await request("GET", data, "manualCalculateInflow");
+}
+  
 
   return {
     calculateOutflow,
@@ -136,6 +153,10 @@ const API = (() => {
 
     inflowHistory,
     prediction,
+
+    // Manual calculator functions
+    manualCalculateOutflow,
+    manualCalculateInflow,
   };
 })();
 /*********************************************************************

@@ -12,7 +12,10 @@ const CONFIG = {
    * CHANGE AFTER DEPLOYING APPS SCRIPT
    ******************************************************/
   API_URL:
-    "https://script.google.com/macros/s/AKfycbw5Bi9BqmsR6lbdFpSSaD78CFbHK-STz2dhFh-LzRG25Isp4GVf83Bju-BwH44Pu8o6BQ/exec",
+  //prod
+     "https://script.google.com/macros/s/AKfycbw5Bi9BqmsR6lbdFpSSaD78CFbHK-STz2dhFh-LzRG25Isp4GVf83Bju-BwH44Pu8o6BQ/exec",
+  //uat
+     // "https://script.google.com/macros/s/AKfycbyeF0N_guGzG4g4SniVPYLMqFVn3nToKeJYXVhsyyt0mDqD1LZ-LEolcDtT4u0Dr8lv/exec",
 
   /******************************************************
    * API ACTIONS
@@ -274,6 +277,24 @@ const Validator = {
       return false;
     }
 
+    return true;
+  },
+
+  isNumeric(id, name) {
+    const value = Dom.value(id);
+
+    // It's okay if it's empty, but if it's not, it must be a number.
+    if (value !== "" && isNaN(value)) {
+      Toast.show(
+        name + " should be numeric",
+
+        "error",
+      );
+
+      Dom.byId(id).focus();
+
+      return false;
+    }
     return true;
   },
 };

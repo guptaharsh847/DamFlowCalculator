@@ -4,7 +4,13 @@
   ],
   "hints": {
     "button-type": "off",
-    "axe/name-role-value": "off"
+    "axe/name-role-value": "off",
+    "axe/forms": [
+      "default",
+      {
+        "label": "off"
+      }
+    ]
   },
   "browserslist": [
     "defaults",

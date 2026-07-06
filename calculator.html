@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Outflow Calculator | Atal Sagar Madikheda Dam</title>
+    <title>Manual Calculator | Atal Sagar Madikheda Dam</title>
 
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="assets/icons/icon-192x192.png" type="image/png" />
@@ -22,14 +22,12 @@
     <script defer src="js/config.js"></script>
     <script defer src="js/api.js"></script>
     <script defer src="js/main.js"></script>
-    <!-- <script defer src="js/common.js"></script> -->
-    <script defer src="js/outflow.js"></script>
+    <script defer src="js/calculator.js"></script>
   </head>
 
   <body>
     <div class="container">
       <!-- Sidebar -->
-
       <aside class="sidebar">
         <div class="logo">
           <span class="logo-icon"
@@ -78,7 +76,7 @@
             ></span>
             <span class="nav-text">Dashboard</span>
           </li>
-          <li class="active">
+          <li onclick="location.href = 'outflow.html'">
             <span class="icon"
               ><svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -114,7 +112,7 @@
             ></span>
             <span class="nav-text">Inflow</span>
           </li>
-          <li onclick="location.href = 'calculator.html'">
+          <li class="active">
             <span class="icon"
               ><svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -128,9 +126,7 @@
                 stroke-linejoin="round"
               >
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline
-                  points="9 22 9 12 15 12 15 22"
-                ></polyline></svg
+                <polyline points="9 22 9 12 15 12 15 22"></polyline></svg
             ></span>
             <span class="nav-text">Calculator</span>
           </li>
@@ -173,7 +169,6 @@
       </aside>
 
       <!-- Main -->
-
       <main class="content">
         <header>
           <button class="mobile-nav-toggle" title="Open navigation">
@@ -193,32 +188,46 @@
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
-          <h1>Outflow Calculator</h1>
-
+          <h1>Manual Calculator</h1>
           <div id="currentDateTime"></div>
         </header>
 
         <!-- Form -->
-
         <section class="formCard">
-          <h2>Enter Details</h2>
-
+          <h2>Enter Details for Calculation</h2>
           <div class="formGrid">
+            <!-- Inflow Inputs -->
             <div class="inputGroup">
-              <label> Water Level (m) </label>
-
+              <label>Previous Water Level (m)</label>
               <input
                 type="number"
-                id="waterLevel"
+                id="previousWaterLevel"
                 step="0.01"
-                placeholder="Enter Water Level"
+                value="0"
               />
             </div>
+            <div class="inputGroup">
+              <label>Current Water Level (m)</label>
+              <input
+                type="number"
+                id="currentWaterLevel"
+                step="0.01"
+                value="0"
+              />
+            </div>
+            <div class="inputGroup">
+              <label>Time Difference (Hours)</label>
+              <input type="number" id="timeDiffHours" step="1" value="0" />
+            </div>
+            <div class="inputGroup">
+              <label>Time Difference (Minutes)</label>
+              <input type="number" id="timeDiffMinutes" step="1" value="0" />
+            </div>
 
+            <!-- Outflow Inputs -->
             <div class="inputGroup" style="grid-column: 1 / -1">
               <label>Gate Openings (m)</label>
               <div class="gate-inputs-grid">
-                <!-- 10 gate inputs -->
                 <div class="gate-input">
                   <label for="gateOpening1">Gate 1</label>
                   <input
@@ -313,152 +322,120 @@
             </div>
 
             <div class="inputGroup">
-              <label> Powerhouse (Hours) </label>
-
-              <input
-                type="number"
-                id="powerhouseHours"
-                step="0.01"
-                placeholder="Enter Hours"
-              />
+              <label>Powerhouse (Hours)</label>
+              <input type="number" id="powerhouseHours" step="0.01" value="0" />
             </div>
 
             <div class="inputGroup">
-              <label> Ukaila Canal </label>
-
-              <input
-                type="number"
-                id="ukailaCanal"
-                step="0.01"
-                placeholder="Enter Value"
-              />
+              <label>Ukaila Canal</label>
+              <input type="number" id="ukailaCanal" step="0.01" value="0" />
             </div>
           </div>
 
           <div class="buttonRow">
-            <button id="calculateBtn" class="primaryBtn">
-              Calculate Outflow
-            </button>
-
+            <button id="calculateBtn" class="primaryBtn">Calculate</button>
             <button id="resetBtn" class="secondaryBtn">Reset</button>
           </div>
         </section>
 
         <!-- Result -->
+        <div class="charts-container">
+          <!-- Inflow Result -->
+          <section class="resultCard">
+            <h2>Inflow Result</h2>
+            <table class="resultTable">
+              <tbody>
+                <tr>
+                  <td>Capacity Difference (MCM)</td>
+                  <td id="capacityDifference">--</td>
+                </tr>
+                <tr>
+                  <td>Capacity in Cumec</td>
+                  <td id="capacityCumec">--</td>
+                </tr>
+                <tr>
+                  <td>Previous Outflow (Cumec)</td>
+                  <td id="previousOutflow">--</td>
+                </tr>
+                <tr class="highlightRow">
+                  <td>Final Inflow (Cumec)</td>
+                  <td id="finalInflow">--</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
 
-        <section class="resultCard">
-          <h2>Calculation Result</h2>
-
-          <table class="resultTable">
-            <tbody>
-              <tr>
-                <td>Total Gate Discharge</td>
-
-                <td id="qValue">--</td>
-              </tr>
-
-              <!-- Individual Gate Discharges -->
-              <tr class="gate-discharge-row">
-                <td>Gate 1 Discharge (q1)</td>
-                <td id="q1Value">--</td>
-              </tr>
-              <tr class="gate-discharge-row">
-                <td>Gate 2 Discharge (q2)</td>
-                <td id="q2Value">--</td>
-              </tr>
-              <tr class="gate-discharge-row">
-                <td>Gate 3 Discharge (q3)</td>
-                <td id="q3Value">--</td>
-              </tr>
-              <tr class="gate-discharge-row">
-                <td>Gate 4 Discharge (q4)</td>
-                <td id="q4Value">--</td>
-              </tr>
-              <tr class="gate-discharge-row">
-                <td>Gate 5 Discharge (q5)</td>
-                <td id="q5Value">--</td>
-              </tr>
-              <tr class="gate-discharge-row">
-                <td>Gate 6 Discharge (q6)</td>
-                <td id="q6Value">--</td>
-              </tr>
-              <tr class="gate-discharge-row">
-                <td>Gate 7 Discharge (q7)</td>
-                <td id="q7Value">--</td>
-              </tr>
-              <tr class="gate-discharge-row">
-                <td>Gate 8 Discharge (q8)</td>
-                <td id="q8Value">--</td>
-              </tr>
-              <tr class="gate-discharge-row">
-                <td>Gate 9 Discharge (q9)</td>
-                <td id="q9Value">--</td>
-              </tr>
-              <tr class="gate-discharge-row">
-                <td>Gate 10 Discharge (q10)</td>
-                <td id="q10Value">--</td>
-              </tr>
-
-              <tr>
-                <td>Powerhouse Outflow</td>
-
-                <td id="powerhouseValue">--</td>
-              </tr>
-
-              <tr>
-                <td>Ukaila Canal</td>
-
-                <td id="ukailaValue">--</td>
-              </tr>
-
-              <tr class="highlightRow">
-                <td>Total Outflow</td>
-
-                <td id="totalOutflow">--</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-
-        <!-- Recent History -->
-
-        <section class="historyBox">
-          <div class="historyHeader">
-            <h2>Last 10 Outflow Records</h2>
-
-            <button id="refreshHistoryBtn" class="secondaryBtn">Refresh</button>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Water Level (m)</th>
-                <th>Gate Opening (m)</th>
-                <th>Gate Discharge</th>
-                <th>Powerhouse Outflow (Cumec)</th>
-                <th>Ukaila Canal (Cumec)</th>
-                <th>Total Outflow (Cumec)</th>
-              </tr>
-            </thead>
-
-            <tbody id="historyTable">
-              <tr>
-                <td colspan="4">No Records Found</td>
-              </tr>
-            </tbody>
-          </table>
-          <div id="historyCardContainer" class="hidden"></div>
-        </section>
+          <!-- Outflow Result -->
+          <section class="resultCard">
+            <h2>Outflow Result</h2>
+            <table class="resultTable">
+              <tbody>
+                <tr>
+                  <td>Total Gate Discharge</td>
+                  <td id="qValue">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 1 Discharge (q1)</td>
+                  <td id="q1Value">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 2 Discharge (q2)</td>
+                  <td id="q2Value">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 3 Discharge (q3)</td>
+                  <td id="q3Value">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 4 Discharge (q4)</td>
+                  <td id="q4Value">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 5 Discharge (q5)</td>
+                  <td id="q5Value">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 6 Discharge (q6)</td>
+                  <td id="q6Value">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 7 Discharge (q7)</td>
+                  <td id="q7Value">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 8 Discharge (q8)</td>
+                  <td id="q8Value">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 9 Discharge (q9)</td>
+                  <td id="q9Value">--</td>
+                </tr>
+                <tr class="gate-discharge-row">
+                  <td>Gate 10 Discharge (q10)</td>
+                  <td id="q10Value">--</td>
+                </tr>
+                <tr>
+                  <td>Powerhouse Outflow</td>
+                  <td id="powerhouseValue">--</td>
+                </tr>
+                <tr>
+                  <td>Ukaila Canal</td>
+                  <td id="ukailaValue">--</td>
+                </tr>
+                <tr class="highlightRow">
+                  <td>Total Outflow</td>
+                  <td id="totalOutflow">--</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </div>
       </main>
     </div>
 
     <!-- Loading Overlay -->
-
     <div id="loader" class="loader hidden">
       <div class="spinner"></div>
-
       <p id="loaderText">Calculating...</p>
     </div>
   </body>
