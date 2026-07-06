@@ -316,7 +316,7 @@ const Validator = {
       return false;
     }
     return true; // Passes if empty or a valid number
-  },
+  }
 };
 
 /***********************************************************************

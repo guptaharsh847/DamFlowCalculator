@@ -9,19 +9,7 @@
 /**************************************************************
  * DOM
  **************************************************************/
-const Outflow = {
-  waterLevel: Dom.byId("waterLevel"),
-
-  powerhouseHours: Dom.byId("powerhouseHours"),
-
-  ukailaCanal: Dom.byId("ukailaCanal"),
-
-  calculateBtn: Dom.byId("calculateBtn"),
-
-  resetBtn: Dom.byId("resetBtn"),
-
-  historyTable: Dom.byId("historyTable"),
-};
+let Outflow = {};
 
 /**************************************************************
  * Initialize
@@ -33,9 +21,19 @@ window.addEventListener(
 );
 
 async function initOutflow() {
+  Outflow = {
+    waterLevel: Dom.byId("waterLevel"),
+    powerhouseHours: Dom.byId("powerhouseHours"),
+    ukailaCanal: Dom.byId("ukailaCanal"),
+    calculateBtn: Dom.byId("calculateBtn"),
+    resetBtn: Dom.byId("resetBtn"),
+    historyTable: Dom.byId("historyTable"),
+  };
+
   bindEvents();
 
   await loadOutflowHistory();
+  setupOutflowGateDetailsToggle();
 }
 
 /**************************************************************
@@ -78,6 +76,10 @@ function bindEvents() {
         },
       );
     });
+}
+
+function setupOutflowGateDetailsToggle() {
+  Dom.byId("gate-details-toggle")?.addEventListener("click", toggleOutflowGateDetails);
 }
 
 /**************************************************************
@@ -175,24 +177,39 @@ async function calculateOutflow() {
  * Update Result Cards
  **************************************************************/
 function updateOutflowResult(response) {
-  // Since the API isn't returning individual q values, we'll calculate them on the frontend
-  // based on the total 'q' and the individual gate openings.
-
+  const totalGateDischarge = response.q || 0;
   let totalOpening = 0;
   for (let i = 1; i <= 10; i++) {
     totalOpening += Dom.number(`gateOpening${i}`);
   }
 
-  const totalGateDischarge = response.q || 0;
-
-  for (let i = 1; i <= 10; i++) {
-    const gateOpening = Dom.number(`gateOpening${i}`);
-    let individualDischarge = 0;
-
-    if (totalOpening > 0 && gateOpening > 0) {
-      individualDischarge = (totalGateDischarge / totalOpening) * gateOpening;
+  // Dynamically build and insert individual gate discharge rows
+  const innerTableBody = document.querySelector(".inner-result-table tbody");
+  if (innerTableBody) {
+    innerTableBody.innerHTML = ""; // Clear previous results
+    for (let i = 1; i <= 10; i++) {
+      let individualDischarge = 0;
+      if (totalOpening > 0) {
+        const gateOpening = Dom.number(`gateOpening${i}`);
+        if (gateOpening > 0) {
+          individualDischarge = (totalGateDischarge / totalOpening) * gateOpening;
+        }
+      }
+      innerTableBody.innerHTML += `
+        <tr>
+          <td>Gate ${i} Discharge (q${i})</td>
+          <td>${format(individualDischarge)}</td>
+        </tr>
+      `;
     }
-    Dom.html(`q${i}Value`, format(individualDischarge));
+  }
+
+  // Show/hide the collapsible toggle based on gate discharge
+  const toggleRow = Dom.byId("gate-details-toggle");
+  if (totalGateDischarge > 0) {
+    toggleRow.classList.remove("hidden");
+  } else {
+    toggleRow.classList.add("hidden");
   }
 
   // Always show the total gate discharge (q)
@@ -343,16 +360,26 @@ function resetOutflowForm() {
 function clearOutflowResult() {
   Dom.html("qValue", "--");
 
-  // Also clear individual gate discharge rows
-  for (let i = 1; i <= 10; i++) {
-    Dom.html(`q${i}Value`, "--");
-  }
+  // Hide and clear the collapsible section
+  const toggleRow = Dom.byId("gate-details-toggle");
+  const containerRow = document.querySelector(".gate-discharge-container-row");
+  toggleRow?.classList.add("hidden");
+  toggleRow?.classList.remove("active");
+  containerRow?.classList.add("hidden");
 
   Dom.html("powerhouseValue", "--");
 
   Dom.html("ukailaValue", "--");
 
   Dom.html("totalOutflow", "--");
+}
+
+function toggleOutflowGateDetails() {
+  const toggleRow = Dom.byId("gate-details-toggle");
+  const detailsContainerRow = document.querySelector(".gate-discharge-container-row");
+
+  toggleRow?.classList.toggle("active");
+  detailsContainerRow?.classList.toggle("hidden");
 }
 
 /**************************************************************
