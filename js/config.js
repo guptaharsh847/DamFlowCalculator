@@ -12,10 +12,10 @@ const CONFIG = {
    * CHANGE AFTER DEPLOYING APPS SCRIPT
    ******************************************************/
   API_URL:
-  //prod
-     "https://script.google.com/macros/s/AKfycbw5Bi9BqmsR6lbdFpSSaD78CFbHK-STz2dhFh-LzRG25Isp4GVf83Bju-BwH44Pu8o6BQ/exec",
-  //uat
-     // "https://script.google.com/macros/s/AKfycbyeF0N_guGzG4g4SniVPYLMqFVn3nToKeJYXVhsyyt0mDqD1LZ-LEolcDtT4u0Dr8lv/exec",
+    //prod
+    //  "https://script.google.com/macros/s/AKfycbw5Bi9BqmsR6lbdFpSSaD78CFbHK-STz2dhFh-LzRG25Isp4GVf83Bju-BwH44Pu8o6BQ/exec",
+    //uat
+    "https://script.google.com/macros/s/AKfycbyeF0N_guGzG4g4SniVPYLMqFVn3nToKeJYXVhsyyt0mDqD1LZ-LEolcDtT4u0Dr8lv/exec",
 
   /******************************************************
    * API ACTIONS
@@ -261,7 +261,13 @@ const Validator = {
   },
 
   number(id, name) {
-    if (!this.required(id, name)) return false;
+    // This validator is for fields that are required and must be numeric.
+    // It correctly handles "0" as a valid number.
+    if (Dom.value(id) === "") {
+      Toast.show(name + " is required", "error");
+      Dom.byId(id).focus();
+      return false;
+    }
 
     const value = Dom.value(id);
 
@@ -280,11 +286,25 @@ const Validator = {
     return true;
   },
 
+  positiveNumber(id, name) {
+    if (!this.number(id, name)) return false; // First, ensure it's a required number
+
+    const value = Dom.number(id);
+    if (value <= 0) {
+      Toast.show(name + " must be greater than 0", "error");
+      Dom.byId(id).focus();
+      return false;
+    }
+
+    return true;
+  },
+
   isNumeric(id, name) {
     const value = Dom.value(id);
 
-    // It's okay if it's empty, but if it's not, it must be a number.
-    if (value !== "" && isNaN(value)) {
+    // This validator allows empty values. If a value exists, it must be a number.
+    // It's less strict than Validator.number.
+    if (value !== "" && isNaN(Number(value))) {
       Toast.show(
         name + " should be numeric",
 
@@ -295,7 +315,7 @@ const Validator = {
 
       return false;
     }
-    return true;
+    return true; // Passes if empty or a valid number
   },
 };
 

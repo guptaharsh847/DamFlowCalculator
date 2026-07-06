@@ -22,6 +22,28 @@ function initializeCalculator() {
   if (resetBtn) {
     resetBtn.addEventListener("click", resetForm);
   }
+
+  populateTimeDropdowns();
+  setupGateDetailsToggle();
+}
+
+function populateTimeDropdowns() {
+  const hoursSelect = Dom.byId("timeDiffHours");
+  const minutesSelect = Dom.byId("timeDiffMinutes");
+
+  if (!hoursSelect || !minutesSelect) return;
+
+  for (let i = 0; i <= 24; i++) {
+    hoursSelect.innerHTML += `<option value="${i}">${i} hr</option>`;
+  }
+
+  for (let i = 0; i < 60; i += 5) {
+    minutesSelect.innerHTML += `<option value="${i}">${i} min</option>`;
+  }
+}
+
+function setupGateDetailsToggle() {
+  Dom.byId("gate-details-toggle")?.addEventListener("click", toggleGateDetails);
 }
 
 /**************************************************************
@@ -77,7 +99,14 @@ async function runCalculations() {
     updateInflowResult(inflowResponse);
     updateOutflowResult(outflowResponse);
 
-    Toast.show("Calculation Complete");
+    // Calculate and display Net Flow
+    const netFlow =
+      (inflowResponse.inflow || 0) - (outflowResponse.totalOutflow || 0);
+    Dom.html("netFlowResult", format(netFlow));
+
+    Toast.show(
+      `Inflow: ${format(inflowResponse.inflow)} | Outflow: ${format(outflowResponse.totalOutflow)}`,
+    );
   } catch (error) {
     console.error("Calculation failed:", error);
     // Toast message is already shown by the API handler
@@ -98,13 +127,13 @@ function updateInflowResult(response) {
 }
 
 function updateOutflowResult(response) {
+  const totalGateDischarge = response.q || 0;
+
   // Since the backend might not return individual q values, calculate them proportionally
   let totalOpening = 0;
   for (let i = 1; i <= 10; i++) {
     totalOpening += Dom.number(`gateOpening${i}`);
   }
-
-  const totalGateDischarge = response.q || 0;
 
   for (let i = 1; i <= 10; i++) {
     const gateOpening = Dom.number(`gateOpening${i}`);
@@ -115,6 +144,13 @@ function updateOutflowResult(response) {
     Dom.html(`q${i}Value`, format(individualDischarge));
   }
 
+  // Show/hide the collapsible toggle
+  const toggleRow = Dom.byId("gate-details-toggle");
+  if (totalGateDischarge > 0) {
+    toggleRow.classList.remove("hidden");
+  } else {
+    toggleRow.classList.add("hidden");
+  }
   Dom.html("qValue", format(response.q));
   Dom.html("powerhouseValue", format(response.powerhouseOutflow));
   Dom.html("ukailaValue", format(response.ukailaCanal));
@@ -125,23 +161,26 @@ function updateOutflowResult(response) {
  * Form Handling
  **************************************************************/
 function validateForm() {
-  const fields = [
-    "previousWaterLevel",
-    "currentWaterLevel",
-    "timeDiffHours",
-    "timeDiffMinutes",
-    "powerhouseHours",
-    "ukailaCanal",
-  ];
-  for (const field of fields) {
-    // Use Validator.number which checks for required and numeric
-    if (!Validator.number(field, field.replace(/([A-Z])/g, " $1").trim())) {
-      return false;
-    }
+  if (!Validator.positiveNumber("previousWaterLevel", "Previous Water Level"))
+    return false;
+  if (!Validator.positiveNumber("currentWaterLevel", "Current Water Level"))
+    return false;
+
+  const timeDiffHours = Dom.number("timeDiffHours");
+  const timeDiffMinutes = Dom.number("timeDiffMinutes");
+  if (timeDiffHours === 0 && timeDiffMinutes === 0) {
+    Toast.show("Time Difference cannot be zero", "error");
+    Dom.byId("timeDiffHours").focus();
+    return false;
   }
+
+  if (!Validator.number("powerhouseHours", "Powerhouse Hours")) return false;
+  if (!Validator.number("ukailaCanal", "Ukaila Canal")) return false;
+
   for (let i = 1; i <= 10; i++) {
     // Use Validator.number, which correctly handles '0' as a valid numeric input
     // but will fail on empty or non-numeric values.
+    // Gate inputs have a default of 0, so Validator.number is fine.
     if (!Validator.number(`gateOpening${i}`, `Gate ${i} Opening`)) return false;
   }
   return true;
@@ -150,9 +189,15 @@ function validateForm() {
 function resetForm() {
   // Reset all number inputs to 0
   document
-    .querySelectorAll('.formGrid input[type="number"]')
+    .querySelectorAll('.formGrid input[type="number"], .formGrid select')
     .forEach((input) => {
-      input.value = "0";
+      if (input.id.startsWith("gateOpening")) {
+        input.value = "0";
+      } else if (input.tagName === "SELECT") {
+        input.value = "0";
+      } else {
+        input.value = "";
+      }
     });
 
   // Clear result tables
@@ -165,13 +210,29 @@ function resetForm() {
     "powerhouseValue",
     "ukailaValue",
     "totalOutflow",
+    "netFlowResult",
   ];
   resultIds.forEach((id) => Dom.html(id, "--"));
 
   for (let i = 1; i <= 10; i++) {
     Dom.html(`q${i}Value`, "--");
   }
+  // Hide gate details on reset
+  Dom.byId("gate-details-toggle").classList.add("hidden");
+  document
+    .querySelectorAll(".gate-discharge-row")
+    .forEach((row) => row.classList.add("hidden"));
 
   Dom.byId("previousWaterLevel").focus();
   Toast.show("Form has been reset");
+}
+
+function toggleGateDetails() {
+  const toggleRow = Dom.byId("gate-details-toggle");
+  const detailsContainer = document.querySelector(
+    ".gate-details-container",
+  ).parentElement;
+
+  toggleRow.classList.toggle("active");
+  detailsContainer.classList.toggle("hidden");
 }
