@@ -79,7 +79,10 @@ function bindEvents() {
 }
 
 function setupOutflowGateDetailsToggle() {
-  Dom.byId("gate-details-toggle")?.addEventListener("click", toggleOutflowGateDetails);
+  Dom.byId("gate-details-toggle")?.addEventListener(
+    "click",
+    toggleOutflowGateDetails,
+  );
 }
 
 /**************************************************************
@@ -146,19 +149,19 @@ async function calculateOutflow() {
       payload[`gateOpening${i}`] = Dom.number(`gateOpening${i}`);
     }
 
-    // Calculate total gate opening for history/display purposes
-    payload.gateOpening = Object.values(payload)
-      .slice(4) // Skips waterLevel, powerhouseHours, ukailaCanal, and returnIndividual
-      .reduce((sum, val) => sum + (val || 0), 0);
-
     const response = await API.calculateOutflow(payload);
+    console.log("Response:", response);
+    if (!response.success) {
+      Toast.show(response.message || "Calculation Failed", "error");
+      return;
+    }
 
     // Log the full API response to the console for debugging
     console.log("Full API Response:", response);
 
     updateOutflowResult(response);
 
-    renderOutflowHistory(response.history);
+    await loadOutflowHistory(); // Refresh the history list
 
     Toast.show("Outflow Calculated Successfully");
   } catch (error) {
@@ -177,36 +180,25 @@ async function calculateOutflow() {
  * Update Result Cards
  **************************************************************/
 function updateOutflowResult(response) {
-  const totalGateDischarge = response.q || 0;
-  let totalOpening = 0;
-  for (let i = 1; i <= 10; i++) {
-    totalOpening += Dom.number(`gateOpening${i}`);
-  }
-
-  // Dynamically build and insert individual gate discharge rows
   const innerTableBody = document.querySelector(".inner-result-table tbody");
+
   if (innerTableBody) {
-    innerTableBody.innerHTML = ""; // Clear previous results
-    for (let i = 1; i <= 10; i++) {
-      let individualDischarge = 0;
-      if (totalOpening > 0) {
-        const gateOpening = Dom.number(`gateOpening${i}`);
-        if (gateOpening > 0) {
-          individualDischarge = (totalGateDischarge / totalOpening) * gateOpening;
+    innerTableBody.innerHTML = "";
+
+    if (response.gateDetails) {
+      response.gateDetails.forEach((gate) => {
+        // Only add rows for gates that have a discharge
+        if (gate.q > 0) {
+          const row = `<tr><td>Gate ${gate.gate} (${gate.opening} cumec)</td><td>${format(gate.q, 3)}</td></tr>`;
+          innerTableBody.insertAdjacentHTML("beforeend", row);
         }
-      }
-      innerTableBody.innerHTML += `
-        <tr>
-          <td>Gate ${i} Discharge (q${i})</td>
-          <td>${format(individualDischarge)}</td>
-        </tr>
-      `;
+      });
     }
   }
 
   // Show/hide the collapsible toggle based on gate discharge
   const toggleRow = Dom.byId("gate-details-toggle");
-  if (totalGateDischarge > 0) {
+  if (response.q > 0) {
     toggleRow.classList.remove("hidden");
   } else {
     toggleRow.classList.add("hidden");
@@ -227,9 +219,9 @@ function updateOutflowResult(response) {
  **************************************************************/
 async function loadOutflowHistory() {
   try {
-    const history = await API.outflowHistory();
-
-    renderOutflowHistory(history);
+    const response = await API.outflowHistory();
+    console.log("outflowHistory Response:", response);
+    renderOutflowHistory(response);
   } catch (error) {
     console.error(error);
   }
@@ -239,6 +231,7 @@ async function loadOutflowHistory() {
  * Render History
  **************************************************************/
 function renderOutflowHistory(history) {
+  console.log("history", history);
   const tableBody = Outflow.historyTable;
   const cardContainer = Dom.byId("historyCardContainer");
 
@@ -269,39 +262,74 @@ function renderOutflowHistory(history) {
 
       // For Desktop Table
       tableBody.innerHTML += `
-      <tr>
-        <td>${displayDate}</td>
-        <td>${displayTime}</td>
-        <td>${format(record.waterLevel, 2)}</td>
-        <td>${format(record.gateOpening, 2)}</td>
-        <td>${format(record.q, 2)}</td>
-        <td>${format(record.powerhouseOutflow, 2)}</td>
-        <td>${format(record.ukailaCanal, 2)}</td>
-        <td><strong>${format(record.totalOutflow, 2)}</strong></td>
-      </tr>
-    `;
+<tr>
 
+<td>${displayDate}</td>
+
+<td>${displayTime}</td>
+
+<td>${format(record.waterLevel, 2)}</td>
+
+<td>${format(record.q, 2)}</td>
+
+<td>${format(record.powerhouseHours, 2)}</td>
+
+<td>${format(record.powerhouseOutflow, 2)}</td>
+
+<td>${format(record.ukailaCanal, 2)}</td>
+
+<td><strong>${format(record.totalOutflow, 2)}</strong></td>
+
+</tr>
+`;
       // For Mobile Cards
       cardContainer.innerHTML += `
-      <div class="history-card">
-        <div class="history-card-header">
-          <div class="info">
-            <h4>Total Outflow: ${format(record.totalOutflow, 2)}</h4>
-            <small>${displayDate} at ${displayTime}</small>
-          </div>
-          <span class="arrow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </span>
-        </div>
-        <div class="history-card-body">
-          <div class="prediction-detail"><span>Water Level (m)</span><span>${format(record.waterLevel, 2)}</span></div>
-          <div class="prediction-detail"><span>Gate Opening (m)</span><span>${format(record.gateOpening, 2)}</span></div>
-          <div class="prediction-detail"><span>Gate Discharge</span><span>${format(record.q, 2)}</span></div>
-          <div class="prediction-detail"><span>Powerhouse Outflow</span><span>${format(record.powerhouseOutflow, 2)}</span></div>
-          <div class="prediction-detail"><span>Ukaila Canal</span><span>${format(record.ukailaCanal, 2)}</span></div>
-        </div>
-      </div>
-    `;
+<div class="history-card">
+<div class="history-card-header">
+<div class="info">
+<h4>${format(record.totalOutflow, 2)} Cumec</h4>
+<small>${displayDate} at ${displayTime}</small>
+</div>
+<span class="arrow"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></span>
+</div>
+<div class="history-card-body">
+<div class="detail-item">
+<span>Water Level</span>
+<span>${format(record.waterLevel, 2)}</span>
+</div>
+<div class="detail-item">
+<span>Total Gate Q</span>
+<span>${format(record.q, 2)}</span>
+</div>
+<div class="detail-item">
+<span>Powerhouse Hours</span>
+<span>${format(record.powerhouseHours, 2)}</span>
+</div>
+<div class="detail-item">
+<span>Powerhouse Outflow</span>
+<span>${format(record.powerhouseOutflow, 2)}</span>
+</div>
+<div class="detail-item">
+<span>Ukaila Canal</span>
+<span>${format(record.ukailaCanal, 2)}</span>
+</div>
+${
+  record.gateDetails
+    ? record.gateDetails
+        .map(
+          (g) => `
+<div class="detail-item">
+<span>Gate ${g.gate}--> </span>
+<span>${format(g.opening, 3)} cumec</span>
+</div>
+`,
+        )
+        .join("")
+    : ""
+}
+</div>
+</div>
+`;
     });
 
   // Add event listeners for collapsible cards
@@ -376,7 +404,9 @@ function clearOutflowResult() {
 
 function toggleOutflowGateDetails() {
   const toggleRow = Dom.byId("gate-details-toggle");
-  const detailsContainerRow = document.querySelector(".gate-discharge-container-row");
+  const detailsContainerRow = document.querySelector(
+    ".gate-discharge-container-row",
+  );
 
   toggleRow?.classList.toggle("active");
   detailsContainerRow?.classList.toggle("hidden");
@@ -401,7 +431,7 @@ async function refreshDashboard() {
 async function afterOutflowSaved(response) {
   updateOutflowResult(response);
 
-  renderOutflowHistory(response.history);
+  renderOutflowHistory(response.history || []);
 
   await refreshDashboard();
 }
@@ -508,47 +538,39 @@ function printOutflow() {
  * Export Current Result
  **************************************************************/
 function exportOutflowJSON() {
+  const gateDetails = [];
+
+  document.querySelectorAll(".inner-result-table tbody tr").forEach((row) => {
+    const cells = row.querySelectorAll("td");
+
+    if (cells.length === 2) {
+      gateDetails.push({
+        gate: cells[0].innerText,
+
+        q: cells[1].innerText,
+      });
+    }
+  });
+
   const result = {
     date: new Date().toLocaleDateString(),
-
     time: new Date().toLocaleTimeString(),
-
     waterLevel: Dom.number("waterLevel"),
-
     powerhouseHours: Dom.number("powerhouseHours"),
-
     ukailaCanal: Dom.number("ukailaCanal"),
-
-    q: Dom.byId("qValue").innerText,
-
+    totalGateQ: Dom.byId("qValue").innerText,
     powerhouseOutflow: Dom.byId("powerhouseValue").innerText,
-
     totalOutflow: Dom.byId("totalOutflow").innerText,
+    gateDetails,
   };
-
-  // Add gate openings to the export
-  for (let i = 1; i <= 10; i++) {
-    result[`gateOpening${i}`] = Dom.number(`gateOpening${i}`);
-  }
-
-  const blob = new Blob(
-    [JSON.stringify(result, null, 2)],
-
-    {
-      type: "application/json",
-    },
-  );
-
+  const blob = new Blob([JSON.stringify(result, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
-
   a.href = url;
-
-  a.download = "outflow.json";
-
+  a.download = `Outflow_${Date.now()}.json`;
   a.click();
-
   URL.revokeObjectURL(url);
 }
 
@@ -565,16 +587,17 @@ window.addEventListener("load", () => {
  * Debug
  **************************************************************/
 function debugOutflow() {
-  console.table({
+  const debug = {
     waterLevel: Dom.number("waterLevel"),
-    gateOpening1: Dom.number("gateOpening1"),
-    gateOpening2: Dom.number("gateOpening2"),
-    // ... and so on for all 10 gates if needed for debugging
-    gateOpening10: Dom.number("gateOpening10"),
     powerhouseHours: Dom.number("powerhouseHours"),
-
     ukailaCanal: Dom.number("ukailaCanal"),
-  });
+  };
+
+  for (let i = 1; i <= 10; i++) {
+    debug[`Gate ${i}`] = Dom.number(`gateOpening${i}`);
+  }
+
+  console.table(debug);
 }
 
 console.log(

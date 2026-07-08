@@ -68,16 +68,11 @@ async function runCalculations() {
       powerhouseHours: Dom.number("powerhouseHours"),
       ukailaCanal: Dom.number("ukailaCanal"),
       returnIndividual: true,
-      powerhouseFactor: CONFIG.POWERHOUSE_FACTOR, // Send the factor to the backend
+      // powerhouseFactor: CONFIG.POWERHOUSE_FACTOR, // Send the factor to the backend
     };
     for (let i = 1; i <= 10; i++) {
       outflowPayload[`gateOpening${i}`] = Dom.number(`gateOpening${i}`);
     }
-
-    // Add the total gateOpening, which the backend requires for validation.
-    outflowPayload.gateOpening = Object.values(outflowPayload)
-      .slice(5) // Skips waterLevel, powerhouseHours, ukailaCanal, returnIndividual, and powerhouseFactor
-      .reduce((sum, val) => sum + (val || 0), 0);
 
     // --- Run calculations sequentially ---
     // 1. Calculate Outflow first
@@ -96,8 +91,8 @@ async function runCalculations() {
     const inflowResponse = await API.manualCalculateInflow(inflowPayload);
 
     // --- Update UI ---
-    updateInflowResult(inflowResponse);
-    updateOutflowResult(outflowResponse);
+    updateManualInflowResult(inflowResponse);
+    updateManualOutflowResult(outflowResponse);
 
     // Calculate and display Net Flow
     const netFlow =
@@ -119,42 +114,36 @@ async function runCalculations() {
 /**************************************************************
  * Update UI with Results
  **************************************************************/
-function updateInflowResult(response) {
+function updateManualInflowResult(response) {
   Dom.html("capacityDifference", format(response.capacityDifference));
   Dom.html("capacityCumec", format(response.capacityCumec));
   Dom.html("previousOutflow", format(response.previousOutflow));
   Dom.html("finalInflow", format(response.inflow));
 }
 
-function updateOutflowResult(response) {
-  const totalGateDischarge = response.q || 0;
-
-  // Since the backend might not return individual q values, calculate them proportionally
-  let totalOpening = 0;
-  for (let i = 1; i <= 10; i++) {
-    totalOpening += Dom.number(`gateOpening${i}`);
+function updateManualOutflowResult(outflowResponse) {
+  if (outflowResponse.gateDetails) {
+    outflowResponse.gateDetails.forEach((gate) => {
+      const gateValueCell = Dom.byId(`q${gate.gate}Value`);
+      if (gateValueCell) {
+        // Display both opening and discharge (q)
+        gateValueCell.innerHTML = `
+          ${format(gate.q)} <span class="text-sm text-gray-500">(${gate.opening}m)</span>
+        `;
+      }
+    });
   }
-
-  for (let i = 1; i <= 10; i++) {
-    const gateOpening = Dom.number(`gateOpening${i}`);
-    let individualDischarge = 0;
-    if (totalOpening > 0 && gateOpening > 0) {
-      individualDischarge = (totalGateDischarge / totalOpening) * gateOpening;
-    }
-    Dom.html(`q${i}Value`, format(individualDischarge));
-  }
-
   // Show/hide the collapsible toggle
   const toggleRow = Dom.byId("gate-details-toggle");
-  if (totalGateDischarge > 0) {
+  if (outflowResponse.q > 0) {
     toggleRow.classList.remove("hidden");
   } else {
     toggleRow.classList.add("hidden");
   }
-  Dom.html("qValue", format(response.q));
-  Dom.html("powerhouseValue", format(response.powerhouseOutflow));
-  Dom.html("ukailaValue", format(response.ukailaCanal));
-  Dom.html("totalOutflow", format(response.totalOutflow));
+  Dom.html("qValue", format(outflowResponse.q));
+  Dom.html("powerhouseValue", format(outflowResponse.powerhouseOutflow));
+  Dom.html("ukailaValue", format(outflowResponse.ukailaCanal));
+  Dom.html("totalOutflow", format(outflowResponse.totalOutflow));
 }
 
 /**************************************************************
