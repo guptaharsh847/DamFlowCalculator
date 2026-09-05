@@ -9,6 +9,81 @@
 /**************************************************************
  * DOM
  **************************************************************/
+/**************************************************************
+ * Safe Date & Time Parser
+ * Formats any incoming backend date to "DD/MM/YYYY" and "hh:mm AM/PM"
+ **************************************************************/
+/**************************************************************
+ * Date & Time Normalizer
+ * Standardizes DD/MM/YYYY, ISO, and standard dates to
+ * "DD/MM/YYYY" and "hh:mm AM/PM".
+ **************************************************************/
+/**************************************************************
+ * Strict DD/MM/YYYY Date & Time Normalizer
+ **************************************************************/
+function normalizeDateTime(dateVal, timeVal = "") {
+  if (!dateVal && !timeVal) {
+    return { date: "--", time: "--" };
+  }
+
+  const str = String(dateVal).trim();
+
+  // 1. If backend already sent DD/MM/YYYY or DD-MM-YYYY, keep day and month as-is!
+  const dmy = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+  if (dmy) {
+    const day = dmy[1].padStart(2, "0");
+    const month = dmy[2].padStart(2, "0");
+    const year = dmy[3];
+
+    // Format time cleanly
+    let formattedTime = timeVal || "--";
+    if (timeVal) {
+      const dummyDate = new Date(
+        `2000-01-01T${timeVal.length === 5 ? timeVal + ":00" : timeVal}`,
+      );
+      if (!isNaN(dummyDate.getTime())) {
+        formattedTime = dummyDate.toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+      }
+    }
+
+    return {
+      date: `${day}/${month}/${year}`,
+      time: formattedTime,
+    };
+  }
+
+  // 2. If it's an ISO format (YYYY-MM-DD or full timestamp)
+  let parsedDate = new Date(dateVal);
+  if (isNaN(parsedDate.getTime()) && timeVal) {
+    parsedDate = new Date(`${dateVal} ${timeVal}`);
+  }
+
+  if (isNaN(parsedDate.getTime())) {
+    return {
+      date: str || "--",
+      time: String(timeVal || "--"),
+    };
+  }
+
+  const day = String(parsedDate.getDate()).padStart(2, "0");
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const year = parsedDate.getFullYear();
+
+  const formattedTime = parsedDate.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return {
+    date: `${day}/${month}/${year}`,
+    time: formattedTime,
+  };
+}
 let Outflow = {};
 
 /**************************************************************
@@ -257,8 +332,11 @@ function renderOutflowHistory(history) {
     .slice()
     .reverse()
     .forEach((record) => {
-      const { date: displayDate } = formatDateTime(record.date);
-      const { time: displayTime } = formatDateTime(record.time);
+      // AFTER:
+      const { date: displayDate, time: displayTime } = normalizeDateTime(
+        record.date,
+        record.time,
+      );
 
       // For Desktop Table
       tableBody.innerHTML += `
